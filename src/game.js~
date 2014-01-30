@@ -285,10 +285,7 @@ function runGame() {
 		}
 
 		currentMouseOver = list.findMouseHover(localCoords.x, localCoords.y);
-
-		if(currentMouseOver != 0) {
-			currentMouseOver.onMouseHover(localCoords.x, localCoords.y);
-		}
+		currentMouseOver.onMouseHover(localCoords.x, localCoords.y);
 
 		list.drawAll(renderingContext);
 	});
