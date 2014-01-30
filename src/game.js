@@ -5,7 +5,7 @@ function addDbgStatus(status) {
 	return para;
 }
 
-function Sprite(image) {
+function Sprite(image, onMouseClick) {
 	this.x = 0;				// Store the x and y coordinates
 	this.y = 0;
 	this.zIndex = 0;		// This is used for image sequencing
@@ -38,9 +38,6 @@ function Sprite(image) {
 	}
 
 	this.onMouseClick = onMouseClick;
-	function onMouseClick(x, y) {
-
-	}
 
 	this.onMouseOut = onMouseOut;
 	function onMouseOut() {
@@ -204,14 +201,45 @@ function runGame() {
 	var renderingContext = canvas.getContext("2d");
 
 	var list = new SpriteList();
-	var background = new Sprite("background.gif");
+	var background = new Sprite("background.gif", function(x, y) {
+		var option1 = new MenuOption("Option 1", function() {
+			addDbgStatus("Option 1 Clicked!");
+		});
+		
+		var option2 = new MenuOption("Option 2", function() {
+			addDbgStatus("Option 2 Clicked!");
+		});
+		
+		contextMenu.x = x;
+		contextMenu.y = y;
+		contextMenu.newOption(option1);
+		contextMenu.newOption(option2);
+		contextMenu.open = true;
+	});
+
 	background.zIndex = -1;
 	list.appendSprite(background);
 	
-	var sprite = new Sprite("sprite.gif");
-	list.appendSprite(sprite);
+	var menuButton = new Sprite("menuButton.gif", function(x, y) {
+		var option1 = new MenuOption("Menu 1", function() {
+			addDbgStatus("Menu 1 Clicked!");
+		});
+		
+		var option2 = new MenuOption("Menu 2", function() {
+			addDbgStatus("Menu 2 Clicked!");
+		});
+		
+		contextMenu.x = x;
+		contextMenu.y = y;
+		contextMenu.newOption(option1);
+		contextMenu.newOption(option2);
+		contextMenu.open = true;
+	});
 
-	var contextMenu = new Menu(0,0);
+	list.appendSprite(menuButton);
+
+	contextMenu = new Menu(0,0);
+	contextMenu.zIndex = 100;
 	list.appendSprite(contextMenu);
 
 	var currentMouseOver = 0;
@@ -251,32 +279,8 @@ function runGame() {
 	});
 
 	canvas.addEventListener('click', function(event) {
-		if(list.findMouseHover(event.clientX, event.clientY) != contextMenu) {
-			if(contextMenu.open) {
-				contextMenu.close();
-
-				list.findMouseHover(event.clientX, event.clientY).onMouseClick(event.clientX, event.clientY);
-			} else {
-				contextMenu.open = true;
-				contextMenu.x = event.clientX;
-				contextMenu.y = event.clientY;
-
-				var option1 = new MenuOption("Testg", function() {
-					addDbgStatus("Testg clicked!");
-				});
-
-				var option2 = new MenuOption("Test2", function() {
-					addDbgStatus("Test2 clicked!");
-				});
-
-				var option3 = new MenuOption("A Really Really Long One", function() {
-					addDbgStatus("A Really Really Long One clicked!");
-				});
-
-				contextMenu.newOption(option1);
-				contextMenu.newOption(option2);
-				contextMenu.newOption(option3);
-			}
+		if(list.findMouseHover(event.clientX, event.clientY) != contextMenu && contextMenu.open) {
+			contextMenu.close();
 		} else {
 			list.findMouseHover(event.clientX, event.clientY).onMouseClick(event.clientX, event.clientY);
 		}
