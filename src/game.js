@@ -154,6 +154,8 @@ function Menu(x, y) {
 				break;
 			}
 		}
+
+		this.close();
 	}
 
 	this.onMouseOut = onMouseOut;
@@ -252,6 +254,8 @@ function runGame() {
 		if(list.findMouseHover(event.clientX, event.clientY) != contextMenu) {
 			if(contextMenu.open) {
 				contextMenu.close();
+
+				list.findMouseHover(event.clientX, event.clientY).onMouseClick(event.clientX, event.clientY);
 			} else {
 				contextMenu.open = true;
 				contextMenu.x = event.clientX;
@@ -273,11 +277,11 @@ function runGame() {
 				contextMenu.newOption(option2);
 				contextMenu.newOption(option3);
 			}
-
-			list.drawAll(renderingContext);
+		} else {
+			list.findMouseHover(event.clientX, event.clientY).onMouseClick(event.clientX, event.clientY);
 		}
 
-		list.findMouseHover(event.clientX, event.clientY).onMouseClick(event.clientX, event.clientY);
+		list.drawAll(renderingContext);
 	});
 
 	list.drawAll(renderingContext);
