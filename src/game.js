@@ -67,6 +67,7 @@ function MenuOption(text, action) {
 	this.text = text;
 	this.action = action;
 	this.hover = false;
+	this.active = true;	// Enabled by default
 }
 
 function Menu(x, y) {
@@ -120,10 +121,14 @@ function Menu(x, y) {
 		}
 
 		for(var i = 0; i < this.options.length; i++) {
-			if(this.options[i].hover) {
+			if(this.options[i].hover && this.options[i].active) {
 				renderingContext.fillStyle = "#0000AA";
-			} else {
+			} else if(this.options[i].hover && !this.options[i].active) {
+				renderingContext.fillStyle = "#777777";
+			} else if(!this.options[i].hover && this.options[i].active) {
 				renderingContext.fillStyle = "#0000FF";
+			} else {
+				renderingContext.fillStyle = "#AAAAAA";
 			}
 
 			renderingContext.fillRect(this.x + this.border, this.y + i*this.oneElHeight + 2*i*this.border + this.border, this.width, this.oneElHeight);
@@ -163,7 +168,7 @@ function Menu(x, y) {
 	this.onMouseClick = onMouseClick;
 	function onMouseClick(x, y) {
 		for(var i = 0; i < this.options.length; i++) {
-			if(this.options[i].hover) {
+			if(this.options[i].hover && this.options[i].active) {
 				this.options[i].action();
 				break;
 			}
@@ -226,11 +231,18 @@ function runGame() {
 		var option2 = new MenuOption("Option 2", function() {
 			addDbgStatus("Option 2 Clicked!");
 		});
+
+		var greyedOut = new MenuOption("This should be greyed out.", function() {
+			addDbgStatus("Something went wrong!");
+		});
+
+		greyedOut.active = false;
 		
 		contextMenu.x = x;
 		contextMenu.y = y;
 		contextMenu.newOption(option1);
 		contextMenu.newOption(option2);
+		contextMenu.newOption(greyedOut);
 		contextMenu.open = true;
 	});
 
