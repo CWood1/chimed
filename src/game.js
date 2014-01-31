@@ -175,7 +175,7 @@ function Menu(x, y) {
 				if(yOff >= i*this.oneElHeight + 2*i*this.border && yOff < i*this.oneElHeight + this.oneElHeight + 2*i*this.border + 2*this.border) {
 					this.options[i].hover = true;
 
-					if(this.options[i].subMenu != false) {
+					if(this.options[i].subMenu != false && this.options[i].active) {
 						this.options[i].subMenu.onMouseOut();
 						this.options[i].subMenu.x = this.x + this.width + 2*this.border;
 						this.options[i].subMenu.y = this.y + i*this.oneElHeight + 2*i*this.border;
@@ -292,6 +292,7 @@ function runGame() {
 
 		subMenu.newOption(subMenuOption1);
 		subMenuOpt.subMenu = subMenu;
+		subMenuOpt.active = false;
 
 		contextMenu.x = x;
 		contextMenu.y = y;
