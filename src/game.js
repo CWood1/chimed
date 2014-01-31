@@ -68,6 +68,8 @@ function MenuOption(text, action) {
 	this.action = action;
 	this.hover = false;
 	this.active = true;	// Enabled by default
+
+	this.subMenu = false;
 }
 
 function Menu(x, y) {
@@ -89,7 +91,11 @@ function Menu(x, y) {
 	this.close = close;
 	function close() {
 		while(this.options.length > 0) {
-			this.options.pop();
+			var opt = this.options.pop();
+
+			if(opt.subMenu != false) {
+				opt.subMenu.close();
+			}
 		}
 
 		this.open = false;
@@ -136,8 +142,12 @@ function Menu(x, y) {
 					this.width + 2*this.border, this.oneElHeight + 2*this.border);
 			renderingContext.fillStyle = "white";
 			renderingContext.fillText(this.options[i].text, this.x + this.border + 1, this.y + 15 + this.border + i*this.oneElHeight + 2*i*this.border);
+
+			if(this.options[i].hover && this.options[i].subMenu != false) {
+				this.options[i].subMenu.draw(renderingContext);
+			}
 		}
-	};
+	}
 	
 	this.checkMouse = checkMouse;
 	function checkMouse(x, y) {
@@ -148,29 +158,62 @@ function Menu(x, y) {
 		if(this.x <= x && this.y <= y && this.x + this.width >= x && this.y + this.height >= y) {
 			return 1;
 		} else {
-			return 0;
+			for(var i = 0; i < this.options.length; i++) {
+				if(this.options[i].subMenu != false && this.options[i].hover) {
+					return this.options[i].subMenu.checkMouse(x, y);
+				}
+			}
 		}
 	}
 
 	this.onMouseHover = onMouseHover;
 	function onMouseHover(x, y) {
-		var yOff = y - this.y;
+		if(this.x <= x && this.y <= y && this.x + this.width >= x && this.y + this.height >= y) {
+			var yOff = y - this.y;
 
-		for(var i = 0; i < this.options.length; i++) {
-			if(yOff >= i*this.oneElHeight + 2*i*this.border && yOff < i*this.oneElHeight + this.oneElHeight + 2*i*this.border + 2*this.border) {
-				this.options[i].hover = true;
-			} else {
-				this.options[i].hover = false;
+			for(var i = 0; i < this.options.length; i++) {
+				if(yOff >= i*this.oneElHeight + 2*i*this.border && yOff < i*this.oneElHeight + this.oneElHeight + 2*i*this.border + 2*this.border) {
+					this.options[i].hover = true;
+
+					if(this.options[i].subMenu != false) {
+						this.options[i].subMenu.onMouseOut();
+						this.options[i].subMenu.x = this.x + this.width + 2*this.border;
+						this.options[i].subMenu.y = this.y + i*this.oneElHeight + 2*i*this.border;
+						this.options[i].subMenu.open = true;
+					}
+				} else {
+					this.options[i].hover = false;
+
+					if(this.options[i].subMenu != false) {
+						this.options[i].subMenu.onMouseOut();
+						this.options[i].subMenu.open = false;	// We can't call close here, as it removes all options from the menu
+					}
+
+				}
+			}
+		} else {
+			for(var i = 0; i < this.options.length; i++) {
+				if(this.options[i].hover && this.options[i].subMenu != false) {
+					this.options[i].subMenu.onMouseHover(x, y);
+				}
 			}
 		}
 	}
 
 	this.onMouseClick = onMouseClick;
 	function onMouseClick(x, y) {
-		for(var i = 0; i < this.options.length; i++) {
-			if(this.options[i].hover && this.options[i].active) {
-				this.options[i].action();
-				break;
+		if(this.x <= x && this.y <= y && this.x + this.width >= x && this.y + this.height >= y) {
+			for(var i = 0; i < this.options.length; i++) {
+				if(this.options[i].hover && this.options[i].active) {
+					this.options[i].action();
+					break;
+				}
+			}
+		} else {
+			for(var i = 0; i < this.options.length; i++) {
+				if(this.options[i].hover && this.options[i].subMenu != false) {
+					this.options[i].subMenu.onMouseClick(x, y);
+				}
 			}
 		}
 
@@ -181,6 +224,11 @@ function Menu(x, y) {
 	function onMouseOut() {
 		for(var i = 0; i < this.options.length; i++) {
 			this.options[i].hover = false;
+
+			if(this.options[i].subMenu != false) {
+				this.options[i].subMenu.onMouseOut();
+				this.options[i].subMenu.open = false;
+			}
 		}
 	}
 }
@@ -232,17 +280,24 @@ function runGame() {
 			addDbgStatus("Option 2 Clicked!");
 		});
 
-		var greyedOut = new MenuOption("This should be greyed out.", function() {
-			addDbgStatus("Something went wrong!");
+		var subMenuOpt = new MenuOption("Submenu", function() {
+			addDbgStatus("Submenu Clicked!");
 		});
 
-		greyedOut.active = false;
-		
+		var subMenu = new Menu(0,0);
+
+		subMenuOption1 = new MenuOption("Sub 1", function() {
+			addDbgStatus("Sub 1 Clicked!");
+		});
+
+		subMenu.newOption(subMenuOption1);
+		subMenuOpt.subMenu = subMenu;
+
 		contextMenu.x = x;
 		contextMenu.y = y;
 		contextMenu.newOption(option1);
 		contextMenu.newOption(option2);
-		contextMenu.newOption(greyedOut);
+		contextMenu.newOption(subMenuOpt);
 		contextMenu.open = true;
 	});
 
