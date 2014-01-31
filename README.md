@@ -1,7 +1,7 @@
 chimed
 ======
 
-_Left to do (Boilerplate)_
+# Left to do (Boilerplate)
 - Bugfix mouse position code
 - Add menu item greyout feature
 - Add messagebox feature
