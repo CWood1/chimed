@@ -35,6 +35,8 @@ function Sprite(image, onMouseClick) {
 	this.width = this.image.width;
 	this.height = this.image.height;
 
+	this.enabled = true;
+
 	// Methods
 	this.draw = draw;
 	function draw(renderingContext) {
@@ -44,9 +46,9 @@ function Sprite(image, onMouseClick) {
 	this.checkMouse = checkMouse;
 	function checkMouse(x, y) {
 		if(this.x <= x && this.y <= y && this.x + this.width >= x && this.y + this.height >= y) {
-			return 1;
+			return true;
 		} else {
-			return 0;
+			return false;
 		}
 	}
 	
@@ -86,6 +88,7 @@ function Menu(x, y) {
 	this.border = 1;
 
 	this.open = false;
+	this.enabled = true;
 
 	// Methods
 	this.close = close;
@@ -152,17 +155,19 @@ function Menu(x, y) {
 	this.checkMouse = checkMouse;
 	function checkMouse(x, y) {
 		if(!this.open) {
-			return 0;
+			return false;
 		}
 
 		if(this.x <= x && this.y <= y && this.x + this.width >= x && this.y + this.height >= y) {
-			return 1;
+			return true;
 		} else {
 			for(var i = 0; i < this.options.length; i++) {
 				if(this.options[i].subMenu != false && this.options[i].hover) {
 					return this.options[i].subMenu.checkMouse(x, y);
 				}
 			}
+			
+			return false;
 		}
 	}
 
@@ -236,6 +241,11 @@ function Menu(x, y) {
 function SpriteList() {
 	this.list = new Array();	// Store the sprites themselves
 
+	this.currentHover = false;
+	this.enabled = true;
+
+	this.zIndex = 0;
+
 	// Methods
 	this.appendSprite = appendSprite;
 	function appendSprite(sprite) {
@@ -244,25 +254,71 @@ function SpriteList() {
 		this.list.sort(function(a, b) {	// Ensure that we're sorted by the zIndex of the sprites
 			return a.zIndex - b.zIndex;
 		});
-	}
 
-	this.drawAll = drawAll;
-	function drawAll(renderingContext) {
 		for(var i = 0; i < this.list.length; i++) {
-			this.list[i].draw(renderingContext);
+			addDbgStatus(this.list[i].zIndex);
 		}
 	}
-	
-	this.findMouseHover = findMouseHover;
-	function findMouseHover(x, y) {
+
+	this.draw = draw;
+	function draw(renderingContext) {
+		for(var i = 0; i < this.list.length; i++) {
+			if(this.list[i].enabled == false) {
+				this.list.splice(i, 1);
+			} else {
+				this.list[i].draw(renderingContext);
+			}
+		}
+	}
+
+	this.checkMouse = checkMouse;
+	function checkMouse(x, y) {
 		for(var i = this.list.length - 1; i >= 0; i--) {
 			// Traverse the list backwards, because zIndex
-			if(this.list[i].checkMouse(x, y) == 1) {
+			if(this.list[i].checkMouse(x, y) != false) {
 				return this.list[i];
 			}
 		}
 		
-		return 0;
+		return false;
+	}
+
+	this.onMouseHover = onMouseHover;
+	function onMouseHover(x, y) {
+		if(this.currentHover == false) {
+			this.currentHover = this.checkMouse(x, y);
+
+			if(this.currentHover == false) {
+				return;	// Give up and go home
+			}
+		} else {
+			if(this.currentHover != this.checkMouse(x, y)) {
+				this.currentHover.onMouseOut();
+				this.currentHover = this.checkMouse(x, y);
+
+				if(this.currentHover == false) {
+					return;	// Give up and go home
+				}
+			}
+		}
+
+		this.currentHover.onMouseHover(x, y);
+	}
+
+	this.onMouseOut = onMouseOut;
+	function onMouseOut() {
+		if(this.currentHover != false) {
+			this.currentHover.onMouseOut();
+
+			this.currentHover = false;
+		}
+	}
+
+	this.onMouseClick = onMouseClick;
+	function onMouseClick(x, y) {
+		if(this.currentHover != false) {
+			this.currentHover.onMouseClick(x, y);
+		}
 	}
 }
 
@@ -270,8 +326,50 @@ function runGame() {
 	var canvas = document.getElementById("mainGame");
 	var renderingContext = canvas.getContext("2d");
 
-	var list = new SpriteList();
+	mainList = new SpriteList();
+	mainMenu = new SpriteList();
+	gamePlay = new SpriteList();
+	gamePlay.enabled = false;
+	optsMenu = new SpriteList();
+	optsMenu.enabled = false;
+
+	var mmBackground = new Sprite("background.gif", function(x, y) {
+
+	});
+
+	mmBackground.zIndex = -1;
+
+	// TODO: This needs centering.
+	var mmMenu = new Menu(0,0);
+	var mmMenuOptPlay = new MenuOption("Play", function() {
+		addDbgStatus("Play pressed.");
+
+		mainMenu.enabled = false;
+		gamePlay.enabled = true;
+		mainList.appendSprite(gamePlay);
+	});
+
+	var mmMenuOptOpts = new MenuOption("Options", function() {
+		addDbgStatus("Options pressed.");
+
+		mainMenu.enabled = false;
+		optsMenu.enabled = true;
+		mainList.appendSprite(optsMenu);
+	});
+
+	mmMenu.newOption(mmMenuOptPlay);
+	mmMenu.newOption(mmMenuOptOpts);
+
+	mmMenu.zIndex = 100;
+	mmMenu.open = true;
+
+	mainMenu.appendSprite(mmBackground);
+	mainMenu.appendSprite(mmMenu);
+	mainList.appendSprite(mainMenu);
+
 	var background = new Sprite("background.gif", function(x, y) {
+		contextMenu.close();
+
 		var option1 = new MenuOption("Option 1", function() {
 			addDbgStatus("Option 1 Clicked!");
 		});
@@ -292,7 +390,7 @@ function runGame() {
 
 		subMenu.newOption(subMenuOption1);
 		subMenuOpt.subMenu = subMenu;
-		subMenuOpt.active = false;
+		option2.active = false;
 
 		contextMenu.x = x;
 		contextMenu.y = y;
@@ -303,9 +401,11 @@ function runGame() {
 	});
 
 	background.zIndex = -1;
-	list.appendSprite(background);
+	gamePlay.appendSprite(background);
 	
 	var menuButton = new Sprite("menuButton.gif", function(x, y) {
+		contextMenu.close();
+
 		var option1 = new MenuOption("Menu 1", function() {
 			addDbgStatus("Menu 1 Clicked!");
 		});
@@ -321,68 +421,46 @@ function runGame() {
 		contextMenu.open = true;
 	});
 
-	list.appendSprite(menuButton);
+	gamePlay.appendSprite(menuButton);
 
 	contextMenu = new Menu(0,0);
 	contextMenu.zIndex = 100;
-	list.appendSprite(contextMenu);
-
-	var currentMouseOver = 0;
+	gamePlay.appendSprite(contextMenu);
 
 	document.addEventListener('keydown', function(event) {
 		if(event.keyCode == 37) {
 			// LEFT
-			list.drawAll(renderingContext);
+			list.draw(renderingContext);
 		} else if(event.keyCode == 39) {
 			// RIGHT
-			list.drawAll(renderingContext);
+			list.draw(renderingContext);
 		} else if(event.keyCode == 38) {
 			// UP
-			list.drawAll(renderingContext);
+			list.draw(renderingContext);
 		} else if(event.keyCode == 40) {
 			// DOWN
-			list.drawAll(renderingContext);
+			list.draw(renderingContext);
 		}
 	});
 
 	canvas.addEventListener('mousemove', function(event) {
 		var localCoords = pageToLocalCoords(event.clientX, event.clientY);
 
-		if(currentMouseOver != 0 && currentMouseOver != list.findMouseHover(localCoords.x, localCoords.y)) {
-			currentMouseOver.onMouseOut();
-		}
-
-		currentMouseOver = list.findMouseHover(localCoords.x, localCoords.y);
-
-		if(currentMouseOver != 0) {
-			currentMouseOver.onMouseHover(localCoords.x, localCoords.y);
-		}
-
-		list.drawAll(renderingContext);
+		mainList.onMouseHover(localCoords.x, localCoords.y);
+		mainList.draw(renderingContext);
 	});
 
 	canvas.addEventListener('mouseleave', function(event) {
-		if(currentMouseOver == 0) {
-			return;
-		}
-
-		currentMouseOver.onMouseOut();
-		currentMouseOver = 0;
-
-		list.drawAll(renderingContext);
+		mainList.onMouseOut();
+		mainList.draw(renderingContext);
 	});
 
 	canvas.addEventListener('click', function(event) {
 		var localCoords = pageToLocalCoords(event.clientX, event.clientY);
 
-		if(list.findMouseHover(localCoords.x, localCoords.y) != contextMenu && contextMenu.open) {
-			contextMenu.close();
-		} else {
-			currentMouseOver.onMouseClick(localCoords.x, localCoords.y);
-		}
-
-		list.drawAll(renderingContext);
+		mainList.onMouseClick(localCoords.x, localCoords.y);
+		mainList.draw(renderingContext);
 	});
 
-	list.drawAll(renderingContext);
+	mainList.draw(renderingContext);
 }
