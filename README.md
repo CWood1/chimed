@@ -9,5 +9,4 @@ chimed
   - For events
   - For background music
   - For randomly playing sounds (configurable average interval)
-- Add options on mainscreen
 - Rearch onClick code, menu code
