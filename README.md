@@ -13,3 +13,10 @@ chimed
   - For randomly playing sounds (configurable average interval)
 - Rearch onClick code, menu code(???)
 - Add support for menu scaling
+
+# Tasks
+## Connor
+- Nothing here :)
+
+## Cam
+- Nothing here :)
