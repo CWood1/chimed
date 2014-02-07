@@ -7,8 +7,6 @@ chimed
 - Bugfix crossplatform (context menu creation does not work. Why?)
 
 ## Features
-- Add messagebox feature
-  - W/configurable amount of buttons, with configurable text & action (read: abstract menuItem class)
 - Add support for sound
   - For events
   - For background music
@@ -16,8 +14,7 @@ chimed
 
 # Tasks
 ## Connor
-- Add messagebox feature
-  - W/configurable amount of buttons, with configurable text & action (read: abstract menuItem class)
+- Add configurable amount of buttons to message box, with configurable text & action (read: abstract menuItem class)
 
 ## Cam
 - Nothing here :)

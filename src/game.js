@@ -91,6 +91,7 @@ function Menu(x, y, scale=1) {
 
 	this.open = false;
 	this.enabled = true;
+	this.clickOff = true;
 
 	// Methods
 	this.close = close;
@@ -104,6 +105,7 @@ function Menu(x, y, scale=1) {
 		}
 
 		this.open = false;
+		this.enabled = false;
 	}
 
 	this.newOption = newOption;
@@ -146,7 +148,8 @@ function Menu(x, y, scale=1) {
 			renderingContext.strokeRect(this.x, this.y + i*this.oneElHeight + 2*i*this.border,
 					this.width + 2*this.border, this.oneElHeight + 2*this.border);
 			renderingContext.fillStyle = "white";
-			renderingContext.fillText(this.options[i].text, this.x + this.border + 1, this.y + this.fontSize + this.border + i*this.oneElHeight + 2*i*this.border);
+			renderingContext.fillText(this.options[i].text, this.x + this.border + 1,
+					this.y + this.fontSize + this.border + i*this.oneElHeight + 2*i*this.border);
 
 			if(this.options[i].hover && this.options[i].subMenu != false) {
 				this.options[i].subMenu.draw(renderingContext);
@@ -240,6 +243,105 @@ function Menu(x, y, scale=1) {
 	}
 }
 
+function MessageBox(x, y, titleText, message) {
+	this.message = message;
+	this.titleText = titleText;
+
+	this.open = false;
+	this.enabled = true;
+	this.clickOff = false;
+
+	this.zIndex = 100;
+
+	this.x = x;
+	this.y = y;
+	this.height = 0;
+	this.width = 0;
+
+	this.fontSize = 15;
+	this.lineHeight = 20;
+	this.border = 1;
+
+	// Methods
+	this.close = function() {
+		this.open = false;
+		this.enabled = false;
+	}
+
+	this.draw = function(renderingContext) {
+		// TODO: Newlines don't work in HTML5 rendering context. Research.
+		if(!this.open) {
+			return;
+		}
+
+		renderingContext.beginPath();
+		renderingContext.strokeStyle = "black";
+		renderingContext.font = this.fontSize + "px Arial";
+
+		this.height = this.message.split("\n").length*this.lineHeight + 3*this.border;
+			// Don't subtract 1, as we'll need the title text
+			// One border for the top, one for the bottom, and one between the title and the message
+
+		this.width = renderingContext.measureText(this.message).width + 2*this.border;
+
+		if(renderingContext.measureText(this.titleText).width + this.lineHeight > this.width) {
+			this.width = renderingContext.measureText(this.titleText).width + this.lineHeight + 2*this.border;
+		}
+
+//		addDbgStatus("Width: " + this.width + " Height: " + this.height);
+
+		renderingContext.fillStyle = "#0000FF";
+
+		renderingContext.fillRect(this.x + this.border, this.y + this.border, this.width, this.lineHeight);
+		renderingContext.strokeRect(this.x, this.y,
+				this.width + 2*this.border, this.lineHeight + 2*this.border);
+		renderingContext.fillStyle = "white";
+		renderingContext.fillText(this.titleText, this.x + this.border + 1,
+				this.y + this.fontSize + this.border);
+
+		renderingContext.fillStyle = "#FF0000";
+
+		renderingContext.fillRect(this.x + this.border + this.width - this.lineHeight, this.y + this.border,
+				this.lineHeight, this.lineHeight);
+
+		renderingContext.fillStyle = "#0000FF";
+
+		renderingContext.fillRect(this.x + this.border, this.y + 2*this.border + this.lineHeight, this.width, this.height - this.lineHeight);
+		renderingContext.strokeRect(this.x, this.y + this.lineHeight + this.border,
+				this.width + 2*this.border, (this.height - this.lineHeight) + 2*this.border);
+		renderingContext.fillStyle = "white";
+		renderingContext.fillText(this.message, this.x + this.border + 1,
+				this.y + this.fontSize + 2*this.border + this.lineHeight);
+	}
+
+	this.checkMouse = function(x, y) {
+		if(!this.open) {
+			return false;
+		}
+
+		if(this.x <= x && this.y <= y && this.x + this.width >= x && this.y + this.height >= y) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	this.onMouseHover = function(x, y) {
+
+	}
+
+	this.onMouseClick = function(x, y) {
+		if(this.y + this.border <= y && this.y + this.lineHeight + this.border >= y && this.x + this.border + this.width - this.lineHeight <= x &&
+				this.x + this.border + this.width >= x) {
+			this.close();
+		}
+	}
+
+	this.onMouseOut = function(x, y) {
+
+	}
+}
+
 function SpriteList() {
 	this.list = new Array();	// Store the sprites themselves
 
@@ -283,7 +385,7 @@ function SpriteList() {
 
 		for(var i = this.list.length - 1; i >= 0; i--) {
 			// Traverse the list backwards, because zIndex
-			if(this.list[i].checkMouse(x, y) != false) {
+			if(this.list[i].enabled && this.list[i].checkMouse(x, y) != false) {
 				return this.list[i];
 			}
 		}
@@ -326,10 +428,16 @@ function SpriteList() {
 	function onMouseClick(x, y) {
 		if(this.currentHover != false) {
 			if(this.activeMenu != false && this.activeMenu.open && this.currentHover != this.activeMenu) {
-				this.activeMenu.close();
-				this.activeMenu = false;
+				if(this.activeMenu.clickOff) {
+					this.activeMenu.close();
+					this.activeMenu = false;
+				}
 			} else {
 				this.currentHover.onMouseClick(x, y);
+
+				if(!this.currentHover.enabled) {
+					this.onMouseHover(x, y);
+				}
 			}
 		}
 	}
@@ -382,36 +490,10 @@ function runGame() {
 		// Use append sprite, rather than add menu, as otherwise it will be possible to close the main menu, without hope of recovery. That's bad
 
 	var background = new Sprite("background.gif", function(x, y) {
-		var contextMenu = new Menu(x, y);
+		var contextMb = new MessageBox(x, y, "Test", "This is\na test");
+		contextMb.open = true;
 
-		var option1 = new MenuOption("Option 1", function() {
-			addDbgStatus("Option 1 Clicked!");
-		});
-		
-		var option2 = new MenuOption("Option 2", function() {
-			addDbgStatus("Option 2 Clicked!");
-		});
-
-		var subMenuOpt = new MenuOption("Submenu", function() {
-			addDbgStatus("Submenu Clicked!");
-		});
-
-		var subMenu = new Menu(0,0);
-
-		subMenuOption1 = new MenuOption("Sub 1", function() {
-			addDbgStatus("Sub 1 Clicked!");
-		});
-
-		subMenu.newOption(subMenuOption1);
-		subMenuOpt.subMenu = subMenu;
-		option2.active = false;
-
-		contextMenu.newOption(option1);
-		contextMenu.newOption(option2);
-		contextMenu.newOption(subMenuOpt);
-		contextMenu.open = true;
-
-		gamePlay.activeMenu = contextMenu;
+		gamePlay.activeMenu = contextMb;
 	});
 
 	background.zIndex = -1;
