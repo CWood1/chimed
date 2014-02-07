@@ -8,13 +8,6 @@ function addDbgStatus(status) {
 }
 
 function pageToLocalCoords(x, y) {
-	 /** Okay, I've changed this up a little. It kind of works now! At least on chrome. 
-		 I haven't deleted anything from the original function, just commented it out,
-		 just in case we still need that code. - Cam
-	*/
-	
-	var html = document.documentElement;
-	var body = document.body;
 	var canvas = document.getElementById("mainGame");
 	
 	var locX = x - canvas.offsetLeft;
