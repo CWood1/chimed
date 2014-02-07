@@ -2,6 +2,8 @@ function addDbgStatus(status) {
 	var para = document.createElement("p");
 	para.innerHTML = status;
 	document.getElementById("debugConsole").appendChild(para);
+	//Makes the debug window scroll to the bottom every time a new status occurs. 
+	document.getElementById("debugConsole").scrollTop = document.getElementById("debugConsole").scrollHeight;
 	return para;
 }
 
@@ -10,14 +12,30 @@ function pageToLocalCoords(x, y) {
 	 * Source: javascript.info
 	 * Page: javascript.info/tutorial/mouse-events
 	 */
+	 
+	 /** Okay, I've changed this up a little. It kind of works now! At least on chrome. 
+		 I haven't deleted anything from the original function, just commented it out,
+		 just in case we still need that code. - Cam
+	*/
+	
 	var html = document.documentElement;
 	var body = document.body;
+	var canvas = document.getElementById("mainGame");
+	
+	var locX = x - canvas.offsetLeft;
+	var locY = y - canvas.offsetTop;
+	
+	//var locX = x + (html.scrollLeft || body && body.scrollLeft || 0);
+	//locX -= html.clientLeft || 0;
 
-	var locX = x + (html.scrollLeft || body && body.scrollLeft || 0);
-	locX -= html.clientLeft || 0;
-
-	var locY = y + (html.scrollTop || body && body.scrollTop || 0);
-	locY -= html.clientTop || 0;
+	//var locY = y + (html.scrollTop || body && body.scrollTop || 0);
+	//locY -= html.clientTop || 0;
+	
+	
+	//Debug stuff below.
+	//addDbgStatus("X location is: "+x+" Y location is: "+y+" locX location is: "+locX+" locY location is: "+locY);
+	//addDbgStatus(canvas.offsetLeft);
+	
 
 	return {x : locX,
 		y : locY};
