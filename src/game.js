@@ -75,7 +75,7 @@ function MenuOption(text, action) {
 	this.subMenu = false;
 }
 
-function Menu(x, y) {
+function Menu(x, y, scale=1) {
 	this.options = new Array();
 	this.zIndex = 100;
 
@@ -83,9 +83,10 @@ function Menu(x, y) {
 	this.y = y;
 	this.height = 0;
 	this.width = 0;
+	this.scale = scale;
 
-	this.oneElHeight = 20;
-	this.fontSize = 15;
+	this.oneElHeight = 20 * this.scale;
+	this.fontSize = 15 * this.scale;
 	this.border = 1;
 
 	this.open = false;
@@ -145,7 +146,7 @@ function Menu(x, y) {
 			renderingContext.strokeRect(this.x, this.y + i*this.oneElHeight + 2*i*this.border,
 					this.width + 2*this.border, this.oneElHeight + 2*this.border);
 			renderingContext.fillStyle = "white";
-			renderingContext.fillText(this.options[i].text, this.x + this.border + 1, this.y + 15 + this.border + i*this.oneElHeight + 2*i*this.border);
+			renderingContext.fillText(this.options[i].text, this.x + this.border + 1, this.y + this.fontSize + this.border + i*this.oneElHeight + 2*i*this.border);
 
 			if(this.options[i].hover && this.options[i].subMenu != false) {
 				this.options[i].subMenu.draw(renderingContext);
@@ -352,7 +353,7 @@ function runGame() {
 	mmBackground.zIndex = -1;
 
 	// TODO: This needs centering.
-	var mmMenu = new Menu(0,0);
+	var mmMenu = new Menu(0,0,1.5);
 	var mmMenuOptPlay = new MenuOption("Play", function() {
 		addDbgStatus("Play pressed.");
 

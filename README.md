@@ -16,7 +16,7 @@ chimed
 
 # Tasks
 ## Connor
-- Add support for menu scaling
+- Nothing here :)
 
 ## Cam
 - Nothing here :)
