@@ -8,11 +8,6 @@ function addDbgStatus(status) {
 }
 
 function pageToLocalCoords(x, y) {
-	/** This function is NOT mine, and I won't pretend that it is.
-	 * Source: javascript.info
-	 * Page: javascript.info/tutorial/mouse-events
-	 */
-	 
 	 /** Okay, I've changed this up a little. It kind of works now! At least on chrome. 
 		 I haven't deleted anything from the original function, just commented it out,
 		 just in case we still need that code. - Cam
@@ -25,18 +20,6 @@ function pageToLocalCoords(x, y) {
 	var locX = x - canvas.offsetLeft;
 	var locY = y - canvas.offsetTop;
 	
-	//var locX = x + (html.scrollLeft || body && body.scrollLeft || 0);
-	//locX -= html.clientLeft || 0;
-
-	//var locY = y + (html.scrollTop || body && body.scrollTop || 0);
-	//locY -= html.clientTop || 0;
-	
-	
-	//Debug stuff below.
-	//addDbgStatus("X location is: "+x+" Y location is: "+y+" locX location is: "+locX+" locY location is: "+locY);
-	//addDbgStatus(canvas.offsetLeft);
-	
-
 	return {x : locX,
 		y : locY};
 }
