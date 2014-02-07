@@ -14,7 +14,6 @@ chimed
   - For events
   - For background music
   - For randomly playing sounds (configurable average interval)
-- Rearch onClick code, menu code(???)
 
 # Tasks
 ## Connor

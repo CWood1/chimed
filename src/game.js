@@ -247,6 +247,8 @@ function SpriteList() {
 
 	this.zIndex = 0;
 
+	this.activeMenu = false;
+
 	// Methods
 	this.appendSprite = appendSprite;
 	function appendSprite(sprite) {
@@ -255,10 +257,6 @@ function SpriteList() {
 		this.list.sort(function(a, b) {	// Ensure that we're sorted by the zIndex of the sprites
 			return a.zIndex - b.zIndex;
 		});
-
-		for(var i = 0; i < this.list.length; i++) {
-			addDbgStatus(this.list[i].zIndex);
-		}
 	}
 
 	this.draw = draw;
@@ -270,10 +268,18 @@ function SpriteList() {
 				this.list[i].draw(renderingContext);
 			}
 		}
+
+		if(this.activeMenu != false) {
+			this.activeMenu.draw(renderingContext);
+		}
 	}
 
 	this.checkMouse = checkMouse;
 	function checkMouse(x, y) {
+		if(this.activeMenu != false && this.activeMenu.checkMouse(x, y) != false) {
+			return this.activeMenu;
+		}
+
 		for(var i = this.list.length - 1; i >= 0; i--) {
 			// Traverse the list backwards, because zIndex
 			if(this.list[i].checkMouse(x, y) != false) {
@@ -318,7 +324,12 @@ function SpriteList() {
 	this.onMouseClick = onMouseClick;
 	function onMouseClick(x, y) {
 		if(this.currentHover != false) {
-			this.currentHover.onMouseClick(x, y);
+			if(this.activeMenu != false && this.activeMenu.open && this.currentHover != this.activeMenu) {
+				this.activeMenu.close();
+				this.activeMenu = false;
+			} else {
+				this.currentHover.onMouseClick(x, y);
+			}
 		}
 	}
 }
@@ -367,9 +378,10 @@ function runGame() {
 	mainMenu.appendSprite(mmBackground);
 	mainMenu.appendSprite(mmMenu);
 	mainList.appendSprite(mainMenu);
+		// Use append sprite, rather than add menu, as otherwise it will be possible to close the main menu, without hope of recovery. That's bad
 
 	var background = new Sprite("background.gif", function(x, y) {
-		contextMenu.close();
+		var contextMenu = new Menu(x, y);
 
 		var option1 = new MenuOption("Option 1", function() {
 			addDbgStatus("Option 1 Clicked!");
@@ -393,19 +405,19 @@ function runGame() {
 		subMenuOpt.subMenu = subMenu;
 		option2.active = false;
 
-		contextMenu.x = x;
-		contextMenu.y = y;
 		contextMenu.newOption(option1);
 		contextMenu.newOption(option2);
 		contextMenu.newOption(subMenuOpt);
 		contextMenu.open = true;
+
+		gamePlay.activeMenu = contextMenu;
 	});
 
 	background.zIndex = -1;
 	gamePlay.appendSprite(background);
 	
 	var menuButton = new Sprite("menuButton.gif", function(x, y) {
-		contextMenu.close();
+		contextMenu = new Menu(x, y);
 
 		var option1 = new MenuOption("Menu 1", function() {
 			addDbgStatus("Menu 1 Clicked!");
@@ -415,18 +427,14 @@ function runGame() {
 			addDbgStatus("Menu 2 Clicked!");
 		});
 		
-		contextMenu.x = x;
-		contextMenu.y = y;
 		contextMenu.newOption(option1);
 		contextMenu.newOption(option2);
 		contextMenu.open = true;
+
+		gamePlay.activeMenu = contextMenu;
 	});
 
 	gamePlay.appendSprite(menuButton);
-
-	contextMenu = new Menu(0,0);
-	contextMenu.zIndex = 100;
-	gamePlay.appendSprite(contextMenu);
 
 	document.addEventListener('keydown', function(event) {
 		if(event.keyCode == 37) {
