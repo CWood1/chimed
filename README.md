@@ -16,7 +16,8 @@ chimed
 
 # Tasks
 ## Connor
-- Nothing here :)
+- Add messagebox feature
+  - W/configurable amount of buttons, with configurable text & action (read: abstract menuItem class)
 
 ## Cam
 - Nothing here :)
