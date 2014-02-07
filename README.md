@@ -7,7 +7,6 @@ chimed
 - Bugfix crossplatform (context menu creation does not work. Why?)
 
 ## Features
-- Add support for menu scaling
 - Add messagebox feature
   - W/configurable amount of buttons, with configurable text & action (read: abstract menuItem class)
 - Add support for sound
@@ -17,7 +16,7 @@ chimed
 
 # Tasks
 ## Connor
-- Nothing here :)
+- Add support for menu scaling
 
 ## Cam
 - Nothing here :)
