@@ -3,8 +3,8 @@ chimed
 
 # Left to do (Boilerplate)
 ## Bugfixes
-- Bugfix mouse position code
-- Bugifx crossplatform (context menu creation does not work. Why?)
+
+- Bugfix crossplatform (context menu creation does not work. Why?)
 
 ## Features
 - Add support for menu scaling
@@ -21,4 +21,4 @@ chimed
 - Nothing here :)
 
 ## Cam
-- Nothing here :)
+- Bugfix mouse position code (I think this one is sorted now, actually.)
