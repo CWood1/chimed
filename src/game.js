@@ -142,11 +142,14 @@ function Menu(x, y, scale=1) {
 				renderingContext.fillStyle = "#AAAAAA";
 			}
 
-			renderingContext.fillRect(this.x + this.border, this.y + i*this.oneElHeight + 2*i*this.border + this.border, this.width, this.oneElHeight);
+			renderingContext.fillRect(this.x + this.border,
+					this.y + i*this.oneElHeight + 2*i*this.border + this.border,
+					this.width, this.oneElHeight);
 			renderingContext.strokeRect(this.x, this.y + i*this.oneElHeight + 2*i*this.border,
 					this.width + 2*this.border, this.oneElHeight + 2*this.border);
 			renderingContext.fillStyle = "white";
-			renderingContext.fillText(this.options[i].text, this.x + this.border + 1,
+			renderingContext.fillText(this.options[i].text, this.x + (this.width / 2) -
+							(renderingContext.measureText(this.options[i].text).width / 2),
 					this.y + this.fontSize + this.border + i*this.oneElHeight + 2*i*this.border);
 
 			if(this.options[i].hover && this.options[i].subMenu != false) {
@@ -312,7 +315,7 @@ function MessageBox(x, y, titleText, message, scale=1) {
 			}
 		}
 
-		if(renderingContext.measureText(this.titleText).width + this.lineHeight > this.width) {
+		if(renderingContext.measureText(this.titleText).width + this.lineHeight + 2*this.border> this.width) {
 			this.width = renderingContext.measureText(this.titleText).width + this.lineHeight + 2*this.border;
 		}
 
@@ -322,7 +325,10 @@ function MessageBox(x, y, titleText, message, scale=1) {
 		renderingContext.strokeRect(this.x, this.y,
 				this.width + 2*this.border, this.lineHeight + 2*this.border);
 		renderingContext.fillStyle = "white";
-		renderingContext.fillText(this.titleText, this.x + this.border + 1,
+
+		renderingContext.fillText(this.titleText, 
+				this.x + ((this.width - (this.closable ? this.lineHeight : 0)) / 2) -
+					(renderingContext.measureText(this.titleText).width / 2),
 				this.y + this.fontSize + this.border);
 
 		if(this.closable) {
@@ -341,7 +347,8 @@ function MessageBox(x, y, titleText, message, scale=1) {
 
 		renderingContext.fillStyle = "white";
 		for(var i = 0; i < lines.length; i++) {
-			renderingContext.fillText(lines[i], this.x + this.border + 1,
+			renderingContext.fillText(lines[i], this.x + (this.width / 2) -
+						(renderingContext.measureText(lines[i]).width / 2),
 					this.y + this.fontSize + 2*this.border + this.lineHeight*(i+1));
 		}
 	}
