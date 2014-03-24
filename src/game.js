@@ -300,17 +300,21 @@ function MessageBox(x, y, titleText, message, scale=1) {
 		renderingContext.strokeStyle = "black";
 		renderingContext.font = this.fontSize + "px Arial";
 
-		this.height = (this.message.split("\n").length + 1)*this.lineHeight + 3*this.border;
+		lines = this.message.split("\n");
+
+		this.height = (lines.length + 1)*this.lineHeight + 3*this.border;
 			// Don't subtract 1, as we'll need the title text
 			// One border for the top, one for the bottom, and one between the title and the message
 
-		this.width = renderingContext.measureText(this.message).width + 2*this.border;
+		for(var i = 0; i < lines.length; i++) {
+			if(renderingContext.measureText(lines[i]).width + 2*this.border > this.width) {
+				this.width = renderingContext.measureText(lines[i]).width + 2*this.border;
+			}
+		}
 
 		if(renderingContext.measureText(this.titleText).width + this.lineHeight > this.width) {
 			this.width = renderingContext.measureText(this.titleText).width + this.lineHeight + 2*this.border;
 		}
-
-//		addDbgStatus("Width: " + this.width + " Height: " + this.height);
 
 		renderingContext.fillStyle = "#0000FF";
 
@@ -334,9 +338,12 @@ function MessageBox(x, y, titleText, message, scale=1) {
 				this.width, this.height - this.lineHeight);
 		renderingContext.strokeRect(this.x, this.y + this.lineHeight + this.border,
 				this.width + 2*this.border, (this.height - this.lineHeight) + 2*this.border);
+
 		renderingContext.fillStyle = "white";
-		renderingContext.fillText(this.message, this.x + this.border + 1,
-				this.y + this.fontSize + 2*this.border + this.lineHeight);
+		for(var i = 0; i < lines.length; i++) {
+			renderingContext.fillText(lines[i], this.x + this.border + 1,
+					this.y + this.fontSize + 2*this.border + this.lineHeight*(i+1));
+		}
 	}
 
 	this.center = function(canvas, renderingContext) {
