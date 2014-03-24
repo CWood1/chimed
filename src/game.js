@@ -154,6 +154,25 @@ function Menu(x, y, scale=1) {
 			}
 		}
 	}
+
+	this.center = center;
+	function center(canvas, renderingContext) {
+		renderingContext.beginPath();
+		renderingContext.strokeStyle = "black";
+		renderingContext.font = this.fontSize + "px Arial";
+
+		for(var i = 0; i < this.options.length; i++) {
+			var dims = renderingContext.measureText(this.options[i].text);
+			if(dims.width > this.width) {
+				this.width = dims.width;
+
+				this.width += 2*this.border;
+			}
+		}
+
+		this.x = (canvas.width / 2) - (this.width / 2);
+		this.y = (canvas.height / 2) - (this.oneElHeight * this.options.length / 2);
+	}
 	
 	this.checkMouse = checkMouse;
 	function checkMouse(x, y) {
@@ -318,6 +337,25 @@ function MessageBox(x, y, titleText, message, scale=1) {
 		renderingContext.fillStyle = "white";
 		renderingContext.fillText(this.message, this.x + this.border + 1,
 				this.y + this.fontSize + 2*this.border + this.lineHeight);
+	}
+
+	this.center = function(canvas, renderingContext) {
+		renderingContext.beginPath();
+		renderingContext.strokeStyle = "black";
+		renderingContext.font = this.fontSize + "px Arial";
+
+		this.height = (this.message.split("\n").length + 1)*this.lineHeight + 3*this.border;
+			// Don't subtract 1, as we'll need the title text
+			// One border for the top, one for the bottom, and one between the title and the message
+
+		this.width = renderingContext.measureText(this.message).width + 2*this.border;
+
+		if(renderingContext.measureText(this.titleText).width + this.lineHeight > this.width) {
+			this.width = renderingContext.measureText(this.titleText).width + this.lineHeight + 2*this.border;
+		}
+
+		this.x = (canvas.width / 2) - (this.width / 2);
+		this.y = (canvas.height / 2) - (this.height / 2);
 	}
 
 	this.checkMouse = function(x, y) {
@@ -505,6 +543,7 @@ function runGame() {
 
 	mmMenu.zIndex = 100;
 	mmMenu.open = true;
+	mmMenu.center(canvas, renderingContext);
 	mainMenu.appendSprite(mmMenu);
 
 	mainList.appendSprite(mainMenu);
@@ -587,6 +626,7 @@ function runGame() {
 		mainList.appendSprite(mainMenu);
 	});
 	oMenu.newOption(oMenuBack);
+	oMenu.center(canvas, renderingContext);
 
 	optsMenu.appendSprite(oMenu);
 
@@ -600,6 +640,7 @@ function runGame() {
 	cBox = new MessageBox(0, 0, "Credits", "Created by:\nA Bunch of People.");
 	cBox.closable = false;
 	cBox.open = true;
+	cBox.center(canvas, renderingContext);
 	credits.appendSprite(cBox);
 
 // High Score /////////////////////////////////////////////////////////////////
@@ -612,6 +653,7 @@ function runGame() {
 	hScore = new MessageBox(0, 0, "High Score", score.toString());
 	hScore.closable = false;
 	hScore.open = true;
+	hScore.center(canvas, renderingContext);
 	highScore.appendSprite(hScore);
 
 // Other stuff ////////////////////////////////////////////////////////////////

@@ -15,7 +15,7 @@ chimed
 
 # Tasks
 ## Connor
-- Get message box working with newline, center everything that needs centering
+- Get message box working with newline
 
 ## Cam
 - Nothing here :)
