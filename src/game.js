@@ -1,5 +1,6 @@
 var sound = true;
 var music = true;
+var score = 0;
 
 function addDbgStatus(status) {
 	var para = document.createElement("p");
@@ -280,7 +281,7 @@ function MessageBox(x, y, titleText, message, scale=1) {
 		renderingContext.strokeStyle = "black";
 		renderingContext.font = this.fontSize + "px Arial";
 
-		this.height = this.message.split("\n").length*this.lineHeight + 3*this.border;
+		this.height = (this.message.split("\n").length + 1)*this.lineHeight + 3*this.border;
 			// Don't subtract 1, as we'll need the title text
 			// One border for the top, one for the bottom, and one between the title and the message
 
@@ -460,11 +461,12 @@ function runGame() {
 	gamePlay = new SpriteList();
 	optsMenu = new SpriteList();
 	credits = new SpriteList();
+	highScore = new SpriteList();
 
 // Main menu //////////////////////////////////////////////////////////////////
 	mainMenu.enabled = true;
 
-	var mmBackground = new Sprite("background.gif", function(x, y) { });
+	var mmBackground = new Sprite("background.jpg", function(x, y) { });
 	mmBackground.zIndex = -1;
 	mainMenu.appendSprite(mmBackground);
 
@@ -490,9 +492,16 @@ function runGame() {
 
 		mainList.appendSprite(credits);
 	});
+	var mmMenuOptHighScore = new MenuOption("High Score", function() {
+		mainMenu.enabled = false;
+		highScore.enabled = true;
+
+		mainList.appendSprite(highScore);
+	});
 	mmMenu.newOption(mmMenuOptPlay);
 	mmMenu.newOption(mmMenuOptOptions);
 	mmMenu.newOption(mmMenuOptCredits);
+	mmMenu.newOption(mmMenuOptHighScore);
 
 	mmMenu.zIndex = 100;
 	mmMenu.open = true;
@@ -503,7 +512,7 @@ function runGame() {
 // Gameplay ///////////////////////////////////////////////////////////////////
 	gamePlay.enabled = false;
 
-	var background = new Sprite("background.gif", function(x, y) {
+	var background = new Sprite("background.jpg", function(x, y) {
 		var contextMb = new MessageBox(x, y, "Test", "This is\na test");
 		contextMb.open = true;
 
@@ -536,7 +545,7 @@ function runGame() {
 // Options menu ///////////////////////////////////////////////////////////////
 	optsMenu.enabled = false;
 
-	optsBackground = new Sprite("background.gif", function(x, y) { });
+	optsBackground = new Sprite("background.jpg", function(x, y) { });
 	optsBackground.zIndex = -1;
 	optsMenu.appendSprite(optsBackground);
 
@@ -584,7 +593,7 @@ function runGame() {
 // Credits ////////////////////////////////////////////////////////////////////
 	credits.enabled = false;
 
-	cBackground = new Sprite("background.gif", function(x, y) { });
+	cBackground = new Sprite("background.jpg", function(x, y) { });
 	cBackground.zIndex = -1;
 	credits.appendSprite(cBackground);
 
@@ -592,6 +601,18 @@ function runGame() {
 	cBox.closable = false;
 	cBox.open = true;
 	credits.appendSprite(cBox);
+
+// High Score /////////////////////////////////////////////////////////////////
+	highScore.enabled = false;
+
+	hBackground = new Sprite("background.jpg", function(x, y) { });
+	hBackground.zIndex = -1;
+	highScore.appendSprite(hBackground);
+
+	hScore = new MessageBox(0, 0, "High Score", score.toString());
+	hScore.closable = false;
+	hScore.open = true;
+	highScore.appendSprite(hScore);
 
 // Other stuff ////////////////////////////////////////////////////////////////
 	document.addEventListener('keydown', function(event) {

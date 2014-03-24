@@ -11,10 +11,11 @@ chimed
   - For events
   - For background music
   - For randomly playing sounds (configurable average interval)
+- Add configurable amount of buttons to message box, with configurable text & action (read: abstract menuItem class)
 
 # Tasks
 ## Connor
-- Add configurable amount of buttons to message box, with configurable text & action (read: abstract menuItem class)
+- Get message box working with newline, center everything that needs centering
 
 ## Cam
 - Nothing here :)
