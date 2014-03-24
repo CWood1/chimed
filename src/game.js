@@ -242,13 +242,14 @@ function Menu(x, y, scale=1) {
 	}
 }
 
-function MessageBox(x, y, titleText, message) {
+function MessageBox(x, y, titleText, message, scale=1) {
 	this.message = message;
 	this.titleText = titleText;
 
 	this.open = false;
 	this.enabled = true;
 	this.clickOff = false;
+	this.closable = true;
 
 	this.zIndex = 100;
 
@@ -257,8 +258,10 @@ function MessageBox(x, y, titleText, message) {
 	this.height = 0;
 	this.width = 0;
 
-	this.fontSize = 15;
-	this.lineHeight = 20;
+	this.scale = scale;
+
+	this.fontSize = 15 * this.scale;
+	this.lineHeight = 20 * this.scale;
 	this.border = 1;
 
 	// Methods
@@ -298,14 +301,17 @@ function MessageBox(x, y, titleText, message) {
 		renderingContext.fillText(this.titleText, this.x + this.border + 1,
 				this.y + this.fontSize + this.border);
 
-		renderingContext.fillStyle = "#FF0000";
+		if(this.closable) {
+			renderingContext.fillStyle = "#FF0000";
 
-		renderingContext.fillRect(this.x + this.border + this.width - this.lineHeight, this.y + this.border,
-				this.lineHeight, this.lineHeight);
+			renderingContext.fillRect(this.x + this.border + this.width - this.lineHeight, this.y + this.border,
+					this.lineHeight, this.lineHeight);
+		}
 
 		renderingContext.fillStyle = "#0000FF";
 
-		renderingContext.fillRect(this.x + this.border, this.y + 2*this.border + this.lineHeight, this.width, this.height - this.lineHeight);
+		renderingContext.fillRect(this.x + this.border, this.y + 2*this.border + this.lineHeight,
+				this.width, this.height - this.lineHeight);
 		renderingContext.strokeRect(this.x, this.y + this.lineHeight + this.border,
 				this.width + 2*this.border, (this.height - this.lineHeight) + 2*this.border);
 		renderingContext.fillStyle = "white";
@@ -453,6 +459,7 @@ function runGame() {
 	mainMenu = new SpriteList();
 	gamePlay = new SpriteList();
 	optsMenu = new SpriteList();
+	credits = new SpriteList();
 
 // Main menu //////////////////////////////////////////////////////////////////
 	mainMenu.enabled = true;
@@ -477,8 +484,15 @@ function runGame() {
 
 		mainList.appendSprite(optsMenu);
 	});
+	var mmMenuOptCredits = new MenuOption("Credits", function() {
+		mainMenu.enabled = false;
+		credits.enabled = true;
+
+		mainList.appendSprite(credits);
+	});
 	mmMenu.newOption(mmMenuOptPlay);
 	mmMenu.newOption(mmMenuOptOptions);
+	mmMenu.newOption(mmMenuOptCredits);
 
 	mmMenu.zIndex = 100;
 	mmMenu.open = true;
@@ -566,6 +580,18 @@ function runGame() {
 	oMenu.newOption(oMenuBack);
 
 	optsMenu.appendSprite(oMenu);
+
+// Credits ////////////////////////////////////////////////////////////////////
+	credits.enabled = false;
+
+	cBackground = new Sprite("background.gif", function(x, y) { });
+	cBackground.zIndex = -1;
+	credits.appendSprite(cBackground);
+
+	cBox = new MessageBox(0, 0, "Credits", "Created by:\nA Bunch of People.");
+	cBox.closable = false;
+	cBox.open = true;
+	credits.appendSprite(cBox);
 
 // Other stuff ////////////////////////////////////////////////////////////////
 	document.addEventListener('keydown', function(event) {
