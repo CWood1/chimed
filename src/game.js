@@ -268,6 +268,7 @@ function Menu(x, y, scale=1) {
 function MessageBox(x, y, titleText, message, scale=1) {
 	this.message = message;
 	this.titleText = titleText;
+	this.options = new Array();
 
 	this.open = false;
 	this.enabled = true;
@@ -293,6 +294,10 @@ function MessageBox(x, y, titleText, message, scale=1) {
 		this.enabled = false;
 	}
 
+	this.newOption = function(option) {
+		this.options.push(option);
+	}
+
 	this.draw = function(renderingContext) {
 		// TODO: Newlines don't work in HTML5 rendering context. Research.
 		if(!this.open) {
@@ -310,13 +315,28 @@ function MessageBox(x, y, titleText, message, scale=1) {
 			// One border for the top, one for the bottom, and one between the title and the message
 
 		for(var i = 0; i < lines.length; i++) {
-			if(renderingContext.measureText(lines[i]).width + 2*this.border > this.width) {
-				this.width = renderingContext.measureText(lines[i]).width + 2*this.border;
+			if(renderingContext.measureText(lines[i]).width + 2*this.border + 2 > this.width) {
+				this.width = renderingContext.measureText(lines[i]).width + 2*this.border + 2;
 			}
 		}
 
-		if(renderingContext.measureText(this.titleText).width + this.lineHeight + 2*this.border> this.width) {
-			this.width = renderingContext.measureText(this.titleText).width + this.lineHeight + 2*this.border;
+		if(renderingContext.measureText(this.titleText).width + this.lineHeight + 2*this.border + 2 > this.width) {
+			this.width = renderingContext.measureText(this.titleText).width + this.lineHeight +
+				2*this.border + 2;
+		}
+
+		if(this.options.length != 0) {
+			var cur = 2*this.border + 2;
+
+			for(var i = 0; i < this.options.length; i++) {
+				cur += 2*this.border + renderingContext.measureText(this.options[i].text).width + 2;
+			}
+
+			if(cur > this.width) {
+				this.width = cur;
+			}
+
+			this.height += this.lineHeight + 6*this.border;
 		}
 
 		renderingContext.fillStyle = "#0000FF";
@@ -341,15 +361,54 @@ function MessageBox(x, y, titleText, message, scale=1) {
 		renderingContext.fillStyle = "#0000FF";
 
 		renderingContext.fillRect(this.x + this.border, this.y + 2*this.border + this.lineHeight,
-				this.width, this.height - this.lineHeight);
+				this.width, this.height - (this.lineHeight + 
+					(this.options.length != 0 ? this.lineHeight + this.border : 0)));
 		renderingContext.strokeRect(this.x, this.y + this.lineHeight + this.border,
-				this.width + 2*this.border, (this.height - this.lineHeight) + 2*this.border);
+				this.width + 2*this.border, this.height + 2*this.border - (this.lineHeight + 
+					(this.options.length != 0 ? this.lineHeight + this.border : 0)));
 
 		renderingContext.fillStyle = "white";
 		for(var i = 0; i < lines.length; i++) {
 			renderingContext.fillText(lines[i], this.x + (this.width / 2) -
 						(renderingContext.measureText(lines[i]).width / 2),
 					this.y + this.fontSize + 2*this.border + this.lineHeight*(i+1));
+		}
+
+		if(this.options.length != 0) {
+			renderingContext.fillStyle = "#0000FF";
+
+			renderingContext.fillRect(this.x + this.border,
+					this.y + 3*this.border + this.height - (this.lineHeight + 1),
+					this.width, this.lineHeight + 4*this.border);
+			renderingContext.strokeRect(this.x, this.y + 2*this.border + this.height - (this.lineHeight + 1),
+					this.width + 2*this.border, this.lineHeight + 6*this.border);
+
+			var widthSoFar = 0;
+			for(var i = 0; i < this.options.length; i++) {
+				var itemWidth = renderingContext.measureText(this.options[i].text).width;
+
+				if(this.options[i].hover) {
+					renderingContext.fillStyle = "#0000AA";
+
+					renderingContext.fillRect(this.x + widthSoFar + 2*(i+1)*this.border + this.border,
+							this.y + 4*this.border + this.height - this.lineHeight,
+							itemWidth, this.lineHeight);
+				}
+
+				renderingContext.strokeRect(this.x + widthSoFar + 2*(i+1)*this.border,
+						this.y + 3*this.border + this.height - this.lineHeight,
+						itemWidth + 2*this.border, this.lineHeight + 2*this.border);
+
+				renderingContext.fillStyle = "white";
+				renderingContext.fillText(this.options[i].text,
+						this.x + widthSoFar + this.border + 2*(i+1)*this.border,
+						this.y + 2*this.border + this.height + this.fontSize - this.lineHeight);
+
+				this.options[i].x = this.x + widthSoFar + 2*(i+1)*this.border;
+				this.options[i].y = this.y + 3*this.border + this.height - this.lineHeight;
+				this.options[i].width = itemWidth + 2*this.border;
+				this.options[i].height = this.lineHeight + 2*this.border;
+			}
 		}
 	}
 
@@ -385,17 +444,35 @@ function MessageBox(x, y, titleText, message, scale=1) {
 	}
 
 	this.onMouseHover = function(x, y) {
-
+		for(var i = 0; i < this.options.length; i++) {
+			if(x >= this.options[i].x && x <= this.options[i].x + this.options[i].width &&
+					y >= this.options[i].y && y <= this.options[i].y + this.options[i].height) {
+				this.options[i].hover = true;
+			} else {
+				this.options[i].hover = false;
+			}
+		}
 	}
 
 	this.onMouseClick = function(x, y) {
-		if(this.y + this.border <= y && this.y + this.lineHeight + this.border >= y && this.x + this.border + this.width - this.lineHeight <= x && this.x + this.border + this.width >= x) {
+		if(this.y + this.border <= y && this.y + this.lineHeight + this.border >= y &&
+				this.x + this.border + this.width - this.lineHeight <= x &&
+				this.x + this.border + this.width >= x && this.closable) {
 			this.close();
+		}
+
+		for(var i = 0; i < this.options.length; i++) {
+			if(x >= this.options[i].x && x <= this.options[i].x + this.options[i].width &&
+					y >= this.options[i].y && y <= this.options[i].y + this.options[i].height) {
+				this.options[i].action();
+			}
 		}
 	}
 
 	this.onMouseOut = function(x, y) {
-
+		for(var i = 0; i < this.options.length; i++) {
+			this.options[i].hover = false;
+		}
 	}
 }
 
@@ -652,6 +729,15 @@ function runGame() {
 	credits.appendSprite(cBackground);
 
 	cBox = new MessageBox(0, 0, "Credits", "Created by:\nA Bunch of People.");
+
+	cBoxBack = new MenuOption("Back to main menu", function() {
+		credits.enabled = false;
+		mainMenu.enabled = true;
+
+		mainList.appendSprite(mainMenu);
+	});
+	cBox.newOption(cBoxBack);
+
 	cBox.closable = false;
 	cBox.open = true;
 	cBox.center(canvas, renderingContext);
