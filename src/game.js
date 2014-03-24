@@ -1,3 +1,6 @@
+var sound = true;
+var music = true;
+
 function addDbgStatus(status) {
 	var para = document.createElement("p");
 	para.innerHTML = status;
@@ -85,6 +88,7 @@ function Menu(x, y, scale=1) {
 	this.open = false;
 	this.enabled = true;
 	this.clickOff = true;
+	this.autoClose = true;
 
 	// Methods
 	this.close = close;
@@ -220,7 +224,9 @@ function Menu(x, y, scale=1) {
 			}
 		}
 
-		this.close();
+		if(this.autoClose) {
+			this.close();
+		}
 	}
 
 	this.onMouseOut = onMouseOut;
@@ -324,8 +330,7 @@ function MessageBox(x, y, titleText, message) {
 	}
 
 	this.onMouseClick = function(x, y) {
-		if(this.y + this.border <= y && this.y + this.lineHeight + this.border >= y && this.x + this.border + this.width - this.lineHeight <= x &&
-				this.x + this.border + this.width >= x) {
+		if(this.y + this.border <= y && this.y + this.lineHeight + this.border >= y && this.x + this.border + this.width - this.lineHeight <= x && this.x + this.border + this.width >= x) {
 			this.close();
 		}
 	}
@@ -432,6 +437,9 @@ function SpriteList() {
 					this.onMouseHover(x, y);
 				}
 			}
+		} else if(this.activeMenu != false && this.activeMenu.open) {
+			this.activeMenu.close();
+			this.activeMenu = false;
 		}
 	}
 }
@@ -441,46 +449,45 @@ function runGame() {
 	var renderingContext = canvas.getContext("2d");
 
 	mainList = new SpriteList();
+
 	mainMenu = new SpriteList();
 	gamePlay = new SpriteList();
-	gamePlay.enabled = false;
 	optsMenu = new SpriteList();
-	optsMenu.enabled = false;
 
-	var mmBackground = new Sprite("background.gif", function(x, y) {
+// Main menu //////////////////////////////////////////////////////////////////
+	mainMenu.enabled = true;
 
-	});
-
+	var mmBackground = new Sprite("background.gif", function(x, y) { });
 	mmBackground.zIndex = -1;
+	mainMenu.appendSprite(mmBackground);
 
-	// TODO: This needs centering.
-	var mmMenu = new Menu(0,0,1.5);
+	// TODO: This needs centering
+	var mmMenu = new Menu(0, 0, 1.5);
+	mmMenu.autoClose = false;
+
 	var mmMenuOptPlay = new MenuOption("Play", function() {
-		addDbgStatus("Play pressed.");
-
 		mainMenu.enabled = false;
 		gamePlay.enabled = true;
+
 		mainList.appendSprite(gamePlay);
 	});
-
-	var mmMenuOptOpts = new MenuOption("Options", function() {
-		addDbgStatus("Options pressed.");
-
+	var mmMenuOptOptions = new MenuOption("Options", function() {
 		mainMenu.enabled = false;
 		optsMenu.enabled = true;
+
 		mainList.appendSprite(optsMenu);
 	});
-
 	mmMenu.newOption(mmMenuOptPlay);
-	mmMenu.newOption(mmMenuOptOpts);
+	mmMenu.newOption(mmMenuOptOptions);
 
 	mmMenu.zIndex = 100;
 	mmMenu.open = true;
-
-	mainMenu.appendSprite(mmBackground);
 	mainMenu.appendSprite(mmMenu);
+
 	mainList.appendSprite(mainMenu);
-		// Use append sprite, rather than add menu, as otherwise it will be possible to close the main menu, without hope of recovery. That's bad
+
+// Gameplay ///////////////////////////////////////////////////////////////////
+	gamePlay.enabled = false;
 
 	var background = new Sprite("background.gif", function(x, y) {
 		var contextMb = new MessageBox(x, y, "Test", "This is\na test");
@@ -512,6 +519,55 @@ function runGame() {
 
 	gamePlay.appendSprite(menuButton);
 
+// Options menu ///////////////////////////////////////////////////////////////
+	optsMenu.enabled = false;
+
+	optsBackground = new Sprite("background.gif", function(x, y) { });
+	optsBackground.zIndex = -1;
+	optsMenu.appendSprite(optsBackground);
+
+	// TODO: Center this
+	oMenu = new Menu(0, 0, 1.5);
+	oMenu.autoClose = false;
+	oMenu.open = true;
+
+	var oMenuToggleSound = new MenuOption("Sound ON/off", function() {
+		this.toggle = !this.toggle;
+		sound = this.toggle;
+
+		if(this.toggle) {
+			this.text = "Sound ON/off";
+		} else {
+			this.text = "Sound on/OFF";
+		}
+	});
+	oMenuToggleSound.toggle = true;
+	oMenu.newOption(oMenuToggleSound);
+
+	var oMenuToggleMusic = new MenuOption("Music ON/off", function() {
+		this.toggle = !this.toggle;
+		music = this.toggle;
+
+		if(this.toggle) {
+			this.text = "Music ON/off";
+		} else {
+			this.text = "Music on/OFF";
+		}
+	});
+	oMenuToggleMusic.toggle = true;
+	oMenu.newOption(oMenuToggleMusic);
+
+	oMenuBack = new MenuOption("Back to main menu", function() {
+		optsMenu.enabled = false;
+		mainMenu.enabled = true;
+
+		mainList.appendSprite(mainMenu);
+	});
+	oMenu.newOption(oMenuBack);
+
+	optsMenu.appendSprite(oMenu);
+
+// Other stuff ////////////////////////////////////////////////////////////////
 	document.addEventListener('keydown', function(event) {
 		if(event.keyCode == 37) {
 			// LEFT
