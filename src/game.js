@@ -303,6 +303,8 @@ function MessageBox(x, y, titleText, message, scale=1) {
 			return;
 		}
 
+		this.width = 0;
+
 		renderingContext.beginPath();
 		renderingContext.strokeStyle = "black";
 		renderingContext.font = this.fontSize + "px Arial";
@@ -319,9 +321,10 @@ function MessageBox(x, y, titleText, message, scale=1) {
 			}
 		}
 
-		if(renderingContext.measureText(this.titleText).width + this.lineHeight + 2*this.border + 2 > this.width) {
-			this.width = renderingContext.measureText(this.titleText).width + this.lineHeight +
-				2*this.border + 2;
+		if(renderingContext.measureText(this.titleText).width +
+				(this.closable ? this.lineHeight : 0) + 2*this.border + 2 > this.width) {
+			this.width = renderingContext.measureText(this.titleText).width +
+				(this.closable ? this.lineHeight : 0) +	2*this.border + 2;
 		}
 
 		var buttonWidth = 0;
@@ -427,7 +430,13 @@ function MessageBox(x, y, titleText, message, scale=1) {
 			// Don't subtract 1, as we'll need the title text
 			// One border for the top, one for the bottom, and one between the title and the message
 
-		this.width = renderingContext.measureText(this.message).width + 2*this.border;
+		lines = this.message.split("\n");
+
+		for(var i = 0; i < lines.length; i++) {
+			if(renderingContext.measureText(lines[i]).width + 2*this.border + 2 > this.width) {
+				this.width = renderingContext.measureText(lines[i]).width + 2*this.border + 2;
+			}
+		}
 
 		if(renderingContext.measureText(this.titleText).width + this.lineHeight > this.width) {
 			this.width = renderingContext.measureText(this.titleText).width + this.lineHeight + 2*this.border;
@@ -734,7 +743,8 @@ function runGame() {
 	cBackground.zIndex = -1;
 	credits.appendSprite(cBackground);
 
-	cBox = new MessageBox(0, 0, "Credits", "Created by:\nA Bunch of People.");
+	cBox = new MessageBox(0, 0, "Credits",
+		"Programmers\nConnor Wood\nCameron Kyle-Davidson\n\nArtwork\nLydia Pauly\n\nGame Design\nBen Williams");
 
 	cBoxBack = new MenuOption("Back", function() {
 		credits.enabled = false;
