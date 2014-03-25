@@ -1,14 +1,12 @@
 chimed
 ======
 
-# Left to do (Boilerplate)
+# Left to do
 ## Bugfixes
-
-- Bugfix crossplatform (context menu creation does not work. Why?)
+- Nothing here :)
 
 ## Features
-- Add support for sound
-  - For randomly playing sounds (configurable average interval)
+- Nothing here :)
 
 # Tasks
 ## Connor

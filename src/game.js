@@ -170,7 +170,11 @@ function MenuOption(text, action) {
 	this.subMenu = false;
 }
 
-function Menu(x, y, scale=1) {
+function Menu(x, y, scale) {
+	if(typeof(scale) === 'undefined') {
+		scale = 1;
+	}
+
 	this.options = new Array();
 	this.zIndex = 100;
 
@@ -363,7 +367,11 @@ function Menu(x, y, scale=1) {
 	}
 }
 
-function MessageBox(x, y, titleText, message, scale=1) {
+function MessageBox(x, y, titleText, message, scale) {
+	if(typeof(scale) === 'undefined') {
+		scale = 1;
+	}
+
 	this.message = message;
 	this.titleText = titleText;
 	this.options = new Array();
