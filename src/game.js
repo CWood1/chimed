@@ -120,7 +120,7 @@ function Menu(x, y, scale=1) {
 
 		renderingContext.beginPath();
 		renderingContext.strokeStyle = "black";
-		renderingContext.font = this.fontSize + "px Arial";
+		renderingContext.font = this.fontSize + "px Dnk";
 
 		for(var i = 0; i < this.options.length; i++) {
 			var dims = renderingContext.measureText(this.options[i].text);
@@ -162,7 +162,7 @@ function Menu(x, y, scale=1) {
 	function center(canvas, renderingContext) {
 		renderingContext.beginPath();
 		renderingContext.strokeStyle = "black";
-		renderingContext.font = this.fontSize + "px Arial";
+		renderingContext.font = this.fontSize + "px Dnk";
 
 		for(var i = 0; i < this.options.length; i++) {
 			var dims = renderingContext.measureText(this.options[i].text);
@@ -307,7 +307,7 @@ function MessageBox(x, y, titleText, message, scale=1) {
 
 		renderingContext.beginPath();
 		renderingContext.strokeStyle = "black";
-		renderingContext.font = this.fontSize + "px Arial";
+		renderingContext.font = this.fontSize + "px Dnk";
 
 		lines = this.message.split("\n");
 
@@ -424,7 +424,7 @@ function MessageBox(x, y, titleText, message, scale=1) {
 	this.center = function(canvas, renderingContext) {
 		renderingContext.beginPath();
 		renderingContext.strokeStyle = "black";
-		renderingContext.font = this.fontSize + "px Arial";
+		renderingContext.font = this.fontSize + "px Dnk";
 
 		this.height = (this.message.split("\n").length + 1)*this.lineHeight + 3*this.border;
 			// Don't subtract 1, as we'll need the title text
