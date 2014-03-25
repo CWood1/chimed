@@ -1,5 +1,36 @@
-var sound = true;
-var music = true;
+function Reactive(initial) {
+	this.value = initial;
+	this.callbacks = [];
+
+	this.set = function(value) {
+		if(value != this.value) {
+			this.value = value;
+
+			for(var i = 0; i < this.callbacks.length; i++) {
+				this.callbacks[i](value);
+			}
+		}
+	}
+
+	this.get = function() {
+		return this.value;
+	}
+
+	this.onChange = function(callback) {
+		this.callbacks.push(callback);
+	}
+
+	this.offChange = function(callback) {
+		for(var i = 0; i < this.callbacks.length; i++) {
+			if(this.callbacks[i] == callback) {
+				this.callbacks.splice(i, 1);
+			}
+		}
+	}
+}
+
+var sound = new Reactive(true);
+var music = new Reactive(true);
 var score = 0;
 
 function addDbgStatus(status) {
@@ -19,6 +50,73 @@ function pageToLocalCoords(x, y) {
 	
 	return {x : locX,
 		y : locY};
+}
+
+function checkSoundSupport() {
+	audio = new Audio();
+
+	if(audio.canPlayType('audio/ogg; codecs="vorbis"') != "") {
+		return 1;
+	} else if(audio.canPlayType('audio/mp3') != "") {
+		return 2;
+	} else {
+		// Give up
+		return -1;
+	}
+}
+
+function Music(file) {
+	this.audio = new Audio(file);
+	var that = this;
+		// Used for the callback
+
+	this.play = function() {
+		if(music.get()) {
+			this.audio.play();
+		}
+	}
+
+	this.stop = function() {
+		this.audio.pause();
+	}
+
+	this.audio.addEventListener('ended', function() {
+		this.currentTime = 0;
+
+		if(music) {
+			this.play();
+		}
+	}, false);
+
+	music.onChange(function(value) {
+		if(value == true) {
+			that.audio.currentTime = 0;
+
+			that.audio.play();
+		} else {
+			that.audio.pause();
+		}
+	});
+
+	if(music.get()) {
+		this.audio.play();
+	}
+}
+
+function EventSound(file) {
+	if(sound.get()) {
+		audio = new Audio(file);
+			// Hahaha audiophile xD
+	
+		audio.play();
+
+		sound.onChange(function(value) {
+			if(value == false) {
+				audio.pause();
+			}
+				// No onchange to true, as by that time, the sound will have gone
+		});
+	}
 }
 
 function Sprite(image, onMouseClick) {
@@ -599,6 +697,19 @@ function runGame() {
 	var canvas = document.getElementById("mainGame");
 	var renderingContext = canvas.getContext("2d");
 
+	var soundSupport = checkSoundSupport();
+	var musicFile = "";
+
+	if(soundSupport == 1) {
+		// Load in Vorbis files
+		musicFile = "music.ogg";
+	} else if(soundSupport == 2) {
+		// Load in MP3 files
+		musicFile = "music.mp3";
+	}
+
+	var backgroundMusic = new Music(musicFile);
+
 	mainList = new SpriteList();
 
 	mainMenu = new SpriteList();
@@ -699,27 +810,27 @@ function runGame() {
 	oMenu.autoClose = false;
 	oMenu.open = true;
 
-	var oMenuToggleSound = new MenuOption("Sound ON/off", function() {
+	var oMenuToggleSound = new MenuOption("Sound off", function() {
 		this.toggle = !this.toggle;
-		sound = this.toggle;
+		sound.set(this.toggle);
 
 		if(this.toggle) {
-			this.text = "Sound ON/off";
+			this.text = "Sound off";
 		} else {
-			this.text = "Sound on/OFF";
+			this.text = "Sound on";
 		}
 	});
 	oMenuToggleSound.toggle = true;
 	oMenu.newOption(oMenuToggleSound);
 
-	var oMenuToggleMusic = new MenuOption("Music ON/off", function() {
+	var oMenuToggleMusic = new MenuOption("Music off", function() {
 		this.toggle = !this.toggle;
-		music = this.toggle;
+		music.set(this.toggle);
 
 		if(this.toggle) {
-			this.text = "Music ON/off";
+			this.text = "Music off";
 		} else {
-			this.text = "Music on/OFF";
+			this.text = "Music on";
 		}
 	});
 	oMenuToggleMusic.toggle = true;
