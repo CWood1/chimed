@@ -299,7 +299,6 @@ function MessageBox(x, y, titleText, message, scale=1) {
 	}
 
 	this.draw = function(renderingContext) {
-		// TODO: Newlines don't work in HTML5 rendering context. Research.
 		if(!this.open) {
 			return;
 		}
@@ -325,6 +324,7 @@ function MessageBox(x, y, titleText, message, scale=1) {
 				2*this.border + 2;
 		}
 
+		var buttonWidth = 0;
 		if(this.options.length != 0) {
 			var cur = 2*this.border + 2;
 
@@ -337,6 +337,8 @@ function MessageBox(x, y, titleText, message, scale=1) {
 			}
 
 			this.height += this.lineHeight + 6*this.border;
+
+			buttonWidth = cur - 2*this.border + 2;
 		}
 
 		renderingContext.fillStyle = "#0000FF";
@@ -387,27 +389,31 @@ function MessageBox(x, y, titleText, message, scale=1) {
 			for(var i = 0; i < this.options.length; i++) {
 				var itemWidth = renderingContext.measureText(this.options[i].text).width;
 
-				if(this.options[i].hover) {
-					renderingContext.fillStyle = "#0000AA";
-
-					renderingContext.fillRect(this.x + widthSoFar + 2*(i+1)*this.border + this.border,
-							this.y + 4*this.border + this.height - this.lineHeight,
-							itemWidth, this.lineHeight);
-				}
-
-				renderingContext.strokeRect(this.x + widthSoFar + 2*(i+1)*this.border,
-						this.y + 3*this.border + this.height - this.lineHeight,
-						itemWidth + 2*this.border, this.lineHeight + 2*this.border);
-
-				renderingContext.fillStyle = "white";
-				renderingContext.fillText(this.options[i].text,
-						this.x + widthSoFar + this.border + 2*(i+1)*this.border,
-						this.y + 2*this.border + this.height + this.fontSize - this.lineHeight);
-
-				this.options[i].x = this.x + widthSoFar + 2*(i+1)*this.border;
+				this.options[i].x = this.x + (this.width / 2) + widthSoFar + 2*(i+1)*this.border
+						- (buttonWidth / 2);
 				this.options[i].y = this.y + 3*this.border + this.height - this.lineHeight;
 				this.options[i].width = itemWidth + 2*this.border;
 				this.options[i].height = this.lineHeight + 2*this.border;
+
+				if(this.options[i].hover) {
+					renderingContext.fillStyle = "#0000AA";
+
+					renderingContext.fillRect(this.options[i].x + this.border,
+							this.options[i].y + this.border,
+							this.options[i].width - 2*this.border,
+							this.options[i].height - 2*this.border);
+				}
+
+				renderingContext.strokeRect(this.options[i].x, this.options[i].y,
+						this.options[i].width, this.options[i].height);
+
+				renderingContext.fillStyle = "white";
+				renderingContext.fillText(this.options[i].text,
+						this.options[i].x + this.border,
+						this.options[i].y + this.fontSize);
+
+
+				widthSoFar += this.options[i].width;
 			}
 		}
 	}
@@ -730,7 +736,7 @@ function runGame() {
 
 	cBox = new MessageBox(0, 0, "Credits", "Created by:\nA Bunch of People.");
 
-	cBoxBack = new MenuOption("Back to main menu", function() {
+	cBoxBack = new MenuOption("Back", function() {
 		credits.enabled = false;
 		mainMenu.enabled = true;
 
@@ -751,6 +757,15 @@ function runGame() {
 	highScore.appendSprite(hBackground);
 
 	hScore = new MessageBox(0, 0, "High Score", score.toString());
+
+	hScoreBack = new MenuOption("Back", function() {
+		highScore.enabled = false;
+		mainMenu.enabled = true;
+
+		mainList.appendSprite(mainMenu);
+	});
+	hScore.newOption(hScoreBack);
+
 	hScore.closable = false;
 	hScore.open = true;
 	hScore.center(canvas, renderingContext);
