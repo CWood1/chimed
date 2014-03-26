@@ -966,6 +966,7 @@ function runGame() {
 	mainList = new SpriteList();
 
 	mainMenu = new SpriteList();
+	diffMenu = new SpriteList();
 	gamePlay = new SpriteList();
 	optsMenu = new SpriteList();
 	credits = new SpriteList();
@@ -983,9 +984,10 @@ function runGame() {
 
 	var mmMenuOptPlay = new MenuOption("Play", function() {
 		mainMenu.enabled = false;
-		gamePlay.enabled = true;
+		diffMenu.enabled = true;
+		//gamePlay.enabled = true;
 
-		mainList.appendSprite(gamePlay);
+		mainList.appendSprite(diffMenu);
 		animation.start();
 	});
 	var mmMenuOptOptions = new MenuOption("Options", function() {
@@ -1006,6 +1008,7 @@ function runGame() {
 
 		mainList.appendSprite(highScore);
 	});
+	
 	mmMenu.newOption(mmMenuOptPlay);
 	mmMenu.newOption(mmMenuOptOptions);
 	mmMenu.newOption(mmMenuOptCredits);
@@ -1027,6 +1030,37 @@ function runGame() {
 
 	background.zIndex = -5;
 	gamePlay.appendSprite(background);
+	
+// Difficulty menu ////////////////////////////////////////////////////////////
+	diffMenu.enabled = false;
+	
+	diffBackground = new Sprite("background.jpg", function(x, y) { });
+	diffBackground.zIndex = -5;
+	diffMenu.appendSprite(diffBackground);
+	
+	dMenu = new Menu(0, 0, 1.5);
+	dMenu.autoClose = false;
+	dMenu.open = true;
+	
+	var dMenuEasy = new MenuOption("Easy", function(){ });
+	var dMenuMed = new MenuOption("Medium", function(){ });
+	var dMenuHard = new MenuOption("Hard", function(){ });
+	var dMenuRtn = new MenuOption("Return to menu", function(){ 
+		diffMenu.enabled = false;
+		mainMenu.enabled = true;
+		
+		mainList.appendSprite(mainMenu);
+		});
+	
+	dMenu.newOption(dMenuEasy);
+	dMenu.newOption(dMenuMed);
+	dMenu.newOption(dMenuHard);
+	dMenu.newOption(dMenuRtn);
+	
+	dMenu.center(canvas, renderingContext);
+	
+	diffMenu.appendSprite(dMenu);
+	mainList.appendSprite(diffMenu);
 
 // Options menu ///////////////////////////////////////////////////////////////
 	optsMenu.enabled = false;
