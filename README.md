@@ -6,7 +6,6 @@ chimed
 - Nothing here :)
 
 ## Features
-- Difficulty selection screen, to appear after pressing "play". Will set several globals, including patient spawn rate, score multiplier, and initial lives of player.
 - Introductary animation, to use afforementioned animation class.
 - Main gameplay screen:
  - Lives and score will be shown using message boxen. Both of these variables will be implemented with reactives, so a callback to update the message box text will be needed.
@@ -22,7 +21,7 @@ chimed
 
 # Tasks
 ## Connor
-- Nothing here :)
+- Difficulty selection screen, to appear after pressing "play". Will set several globals, including patient spawn rate, score multiplier, and initial lives of player.
 
 ## Cam
 - Nothing here :)
