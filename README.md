@@ -7,7 +7,6 @@ chimed
 
 ## Features
 - Core features:
- - Implement an abstract timer class, with timeout and 1 second callbacks, as well as get remaining time. To animate a clock onscreen
  - Create an animated sprite class. To have a callback upon completion of the animation, with a "click to skip" feature.
  - Create a slideshow class, with callback upon completion, "click to continue" optionally, and "click to skip".
  - Implement a lives variable, and handlers for (reactive, or subclass of)
@@ -27,7 +26,7 @@ chimed
 
 # Tasks
 ## Connor
-- Nothing here :)
+- Re-implement highscore as a reactive, default 0
 
 ## Cam
 - Nothing here :)

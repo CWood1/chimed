@@ -161,6 +161,125 @@ function Sprite(image, onMouseClick) {
 	}
 }
 
+function Timer(startTime, scale) {
+	if(typeof(scale) === 'undefined') {
+		scale = 1;
+	}
+
+	this.time = startTime;
+	this.onSecondC = [];
+	this.onTimeoutC = [];
+
+	this.x = 0;
+	this.y = 0;
+	this.radius = 20*scale;
+	this.enabled = true;
+
+	this.textX = 0;
+	this.textY = 0;
+	this.text = false;
+	this.fontSize = 10*scale;
+
+	this.interval = {};
+	this.selfDisabling = true;
+
+	this.draw = function(renderingContext) {
+		// TODO: implement properly
+		renderingContext.strokeStyle = "black";
+		renderingContext.fillStyle = "white";
+
+		renderingContext.beginPath();
+		renderingContext.arc(this.x + this.radius, this.y + this.radius, this.radius,
+				0, Math.PI * 2, false);
+		renderingContext.fill();
+		renderingContext.stroke();
+
+		var theta = Math.PI * this.time / 30;
+		renderingContext.save();
+
+		renderingContext.translate(this.x + this.radius, this.y + this.radius);
+		renderingContext.rotate(theta);
+
+		renderingContext.beginPath();
+		renderingContext.moveTo(0, 0.1*this.radius);
+		renderingContext.lineTo(0, -0.9*this.radius);
+		renderingContext.stroke();
+
+		renderingContext.restore();
+
+		if(this.text) {
+			renderingContext.font = this.fontSize + "pt Arial";
+			renderingContext.fillStyle = "black";
+
+			renderingContext.fillText(this.time.toString(), this.textX, this.textY + this.fontSize);
+		}
+	}
+
+	this.checkMouse = function(x, y) {
+		var tmpX = x - (this.x + this.radius);
+		var tmpY = y - (this.y + this.radius);
+
+		if(tmpX*tmpX + tmpY*tmpY <= this.radius*this.radius) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	this.onMouseHover = function(x, y) {
+		this.textX = x + this.fontSize;
+		this.textY = y;
+		this.text = true;
+	}
+
+	this.onMouseOut = function() {
+		this.text = false;
+	}
+
+	this.onMouseClick = function(x, y) {
+
+	}
+
+	this.onSecond = function(callback) {
+		this.onSecondC.push(callback);
+	}
+
+	this.onTimeout = function(callback) {
+		this.onTimeoutC.push(callback);
+	}
+
+	this.start = function() {
+		var that = this;
+		this.interval = setInterval(function() {
+			that.time--;
+
+			for(var i = 0; i < that.onSecondC.length; i++) {
+				that.onSecondC[i](that.time);
+			}
+
+			if(that.time == 0) {
+				clearInterval(that.interval);
+
+				if(that.selfDisabling) {
+					that.enabled = false;
+				}
+
+				for(var i = 0; i < that.onTimeoutC.length; i++) {
+					that.onTimeoutC[i]();
+				}
+			}
+		}, 1000);
+	}
+
+	this.stop = function() {
+		clearInterval(this.interval);
+	}
+
+	this.getTime = function() {
+		return this.time;
+	}
+}
+
 function MenuOption(text, action) {
 	this.text = text;
 	this.action = action;
@@ -742,6 +861,7 @@ function runGame() {
 		gamePlay.enabled = true;
 
 		mainList.appendSprite(gamePlay);
+		timer.start();
 	});
 	var mmMenuOptOptions = new MenuOption("Options", function() {
 		mainMenu.enabled = false;
@@ -777,34 +897,24 @@ function runGame() {
 	gamePlay.enabled = false;
 
 	var background = new Sprite("background.jpg", function(x, y) {
-		var contextMb = new MessageBox(x, y, "Test", "This is\na test");
-		contextMb.open = true;
-
-		gamePlay.activeMenu = contextMb;
 	});
 
 	background.zIndex = -1;
 	gamePlay.appendSprite(background);
-	
-	var menuButton = new Sprite("menuButton.gif", function(x, y) {
-		contextMenu = new Menu(x, y);
 
-		var option1 = new MenuOption("Menu 1", function() {
-			addDbgStatus("Menu 1 Clicked!");
-		});
-		
-		var option2 = new MenuOption("Menu 2", function() {
-			addDbgStatus("Menu 2 Clicked!");
-		});
-		
-		contextMenu.newOption(option1);
-		contextMenu.newOption(option2);
-		contextMenu.open = true;
-
-		gamePlay.activeMenu = contextMenu;
+	var timer = new Timer(20);
+	timer.onSecond(function(value) {
+		addDbgStatus(value.toString());
 	});
 
-	gamePlay.appendSprite(menuButton);
+	timer.onTimeout(function() {
+		addDbgStatus("Timeout!");
+	});
+
+	timer.x = 150;
+	timer.y = 150;
+
+	gamePlay.appendSprite(timer);
 
 // Options menu ///////////////////////////////////////////////////////////////
 	optsMenu.enabled = false;
@@ -937,4 +1047,7 @@ function runGame() {
 	});
 
 	mainList.draw(renderingContext);
+	setInterval(function() {
+		mainList.draw(renderingContext);
+	}, 50);
 }
