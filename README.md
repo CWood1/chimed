@@ -22,7 +22,6 @@ chimed
 # Tasks
 ## Connor
 - Make animation slides cross-fade
-- Difficulty selection screen, to appear after pressing "play". Will set several globals, including patient spawn rate, score multiplier, and initial lives of player.
 
 ## Cam
 - Nothing here :)
