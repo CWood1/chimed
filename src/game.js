@@ -151,7 +151,7 @@ function Sprite(image, onMouseClick) {
 	
 	this.onMouseHover = onMouseHover;
 	function onMouseHover(x, y) {
-	//	addDbgStatus(this.image.src + " Mouse Hover Event - " + x + " " + y);
+
 	}
 
 	this.onMouseClick = onMouseClick;
@@ -159,6 +159,132 @@ function Sprite(image, onMouseClick) {
 	this.onMouseOut = onMouseOut;
 	function onMouseOut() {
 
+	}
+}
+
+function Animation(continuable) {
+	if(typeof(continuable) === 'undefined') {
+		continuable = true;
+	}
+
+	var that = this;
+
+	this.slides = [];
+	this.onCompleteC = [];
+	this.activeSlide = 0;
+	this.enabled = true;
+	this.continuable = continuable;
+
+	this.skip = new Menu(0, 0);
+	this.cont = new Menu(0, 0);
+
+	this.interval = {};
+
+	var skipItem = new MenuOption("Skip", function() {
+		that.complete();
+	});
+
+	this.skip.newOption(skipItem);
+	this.skip.open = true;
+	this.skip.autoClose = false;
+	
+	var contItem = new MenuOption("Continue", function() {
+		that.nextFrame();
+	});
+
+	this.cont.newOption(contItem);
+	this.cont.open = this.continuable;
+	this.cont.autoClose = false;
+
+	this.complete = function() {
+		clearTimeout(this.interval);
+		this.enabled = false;
+
+		for(var i = 0; i < this.onCompleteC.length; i++) {
+			this.onCompleteC[i]();
+		}
+	}
+
+	this.nextFrame = function() {
+		clearTimeout(this.interval);
+		changeSlides();
+	}
+
+	this.addSlide = function(slide, duration) {
+		var newSlide = slide;
+		newSlide.duration = duration;
+
+		this.slides.push(newSlide);
+	}
+
+	this.onComplete = function(callback) {
+		this.onCompleteC.push(callback);
+	}
+
+	this.draw = function(renderingContext) {
+		this.skip.draw(renderingContext);
+			// This will be drawn over; this is to get the width
+		this.slides[this.activeSlide].draw(renderingContext);
+
+		this.cont.x = 0;
+		this.cont.y = this.slides[this.activeSlide].height - this.cont.height;
+
+		this.cont.draw(renderingContext);
+
+		this.skip.x = this.slides[this.activeSlide].width - this.skip.width;
+		this.skip.y = this.slides[this.activeSlide].height - this.skip.height;
+
+		this.skip.draw(renderingContext);
+	}
+
+	this.checkMouse = function(x, y) {
+		return this.slides[this.activeSlide].checkMouse(x, y);
+	}
+
+	this.onMouseHover = function(x, y) {
+		if(this.skip.checkMouse(x, y)) {
+			this.skip.onMouseHover(x, y);
+		} else if(this.continuable && this.cont.checkMouse(x, y)) {
+			this.cont.onMouseHover(x, y);
+		} else {
+			this.slides[this.activeSlide].onMouseHover(x, y);
+		}
+	}
+
+	this.onMouseClick = function(x, y) {
+		if(this.skip.checkMouse(x, y)) {
+			this.skip.onMouseClick(x, y);
+		} else if(this.continuable && this.cont.checkMouse(x, y)) {
+			this.cont.onMouseClick(x, y);
+		} else {
+			this.slides[this.activeSlide].onMouseClick(x, y);
+		}
+	}
+
+	this.onMouseOut = function() {
+		this.skip.onMouseOut();
+		this.cont.onMouseOut();
+		this.slides[this.activeSlide].onMouseOut();
+	}
+
+	function changeSlides() {
+		that.activeSlide++;
+
+		if(that.activeSlide >= that.slides.length) {
+			that.enabled = false;
+
+			for(var i = 0; i < that.onCompleteC.length; i++) {
+				that.onCompleteC[i]();
+			}
+		} else {
+			that.interval = setTimeout(changeSlides, that.slides[that.activeSlide].duration);
+		}
+	}
+
+	this.start = function() {
+		if(this.slides.length != 0) {
+			this.interval = setTimeout(changeSlides, this.slides[that.activeSlide].duration);
+		}
 	}
 }
 
@@ -185,7 +311,6 @@ function Timer(startTime, scale) {
 	this.selfDisabling = true;
 
 	this.draw = function(renderingContext) {
-		// TODO: implement properly
 		renderingContext.strokeStyle = "black";
 		renderingContext.fillStyle = "white";
 
@@ -770,7 +895,7 @@ function SpriteList() {
 
 	this.onMouseHover = onMouseHover;
 	function onMouseHover(x, y) {
-		if(this.currentHover == false) {
+		if(this.currentHover == false || this.currentHover.enabled == false) {
 			this.currentHover = this.checkMouse(x, y);
 
 			if(this.currentHover == false) {
@@ -853,7 +978,6 @@ function runGame() {
 	mmBackground.zIndex = -1;
 	mainMenu.appendSprite(mmBackground);
 
-	// TODO: This needs centering
 	var mmMenu = new Menu(0, 0, 1.5);
 	mmMenu.autoClose = false;
 
@@ -862,7 +986,7 @@ function runGame() {
 		gamePlay.enabled = true;
 
 		mainList.appendSprite(gamePlay);
-		timer.start();
+		animation.start();
 	});
 	var mmMenuOptOptions = new MenuOption("Options", function() {
 		mainMenu.enabled = false;
@@ -898,24 +1022,11 @@ function runGame() {
 	gamePlay.enabled = false;
 
 	var background = new Sprite("background.jpg", function(x, y) {
+
 	});
 
-	background.zIndex = -1;
+	background.zIndex = -5;
 	gamePlay.appendSprite(background);
-
-	var timer = new Timer(20);
-	timer.onSecond(function(value) {
-		addDbgStatus(value.toString());
-	});
-
-	timer.onTimeout(function() {
-		addDbgStatus("Timeout!");
-	});
-
-	timer.x = 150;
-	timer.y = 150;
-
-	gamePlay.appendSprite(timer);
 
 // Options menu ///////////////////////////////////////////////////////////////
 	optsMenu.enabled = false;
@@ -924,7 +1035,6 @@ function runGame() {
 	optsBackground.zIndex = -1;
 	optsMenu.appendSprite(optsBackground);
 
-	// TODO: Center this
 	oMenu = new Menu(0, 0, 1.5);
 	oMenu.autoClose = false;
 	oMenu.open = true;
