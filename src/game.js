@@ -31,7 +31,8 @@ function Reactive(initial) {
 
 var sound = new Reactive(true);
 var music = new Reactive(true);
-var score = 0;
+var score = new Reactive(0);
+var lives = new Reactive(0);
 
 function addDbgStatus(status) {
 	var para = document.createElement("p");
@@ -995,7 +996,7 @@ function runGame() {
 	hBackground.zIndex = -1;
 	highScore.appendSprite(hBackground);
 
-	hScore = new MessageBox(0, 0, "High Score", score.toString());
+	hScore = new MessageBox(0, 0, "High Score", score.get().toString());
 
 	hScoreBack = new MenuOption("Back", function() {
 		highScore.enabled = false;

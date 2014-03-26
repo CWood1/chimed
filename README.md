@@ -9,8 +9,6 @@ chimed
 - Core features:
  - Create an animated sprite class. To have a callback upon completion of the animation, with a "click to skip" feature.
  - Create a slideshow class, with callback upon completion, "click to continue" optionally, and "click to skip".
- - Implement a lives variable, and handlers for (reactive, or subclass of)
- - Re-implement highscore as a reactive, default 0
 - Game features:
  - Difficulty selection screen, to appear after pressing "play". Will set several globals, including patient spawn rate, score multiplier, and initial lives of player.
  - Introductary animation, to use afforementioned animation class.
@@ -26,7 +24,7 @@ chimed
 
 # Tasks
 ## Connor
-- Re-implement highscore as a reactive, default 0
+- Nothing here :)
 
 ## Cam
 - Nothing here :)
