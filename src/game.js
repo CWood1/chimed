@@ -988,7 +988,6 @@ function runGame() {
 		//gamePlay.enabled = true;
 
 		mainList.appendSprite(diffMenu);
-		animation.start();
 	});
 	var mmMenuOptOptions = new MenuOption("Options", function() {
 		mainMenu.enabled = false;
