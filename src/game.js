@@ -33,6 +33,8 @@ var sound = new Reactive(true);
 var music = new Reactive(true);
 var score = new Reactive(0);
 var lives = new Reactive(0);
+var scoreMultiplier = 0;
+var spawnRate = 0;
 
 function addDbgStatus(status) {
 	var para = document.createElement("p");
@@ -1041,15 +1043,45 @@ function runGame() {
 	dMenu.autoClose = false;
 	dMenu.open = true;
 	
-	var dMenuEasy = new MenuOption("Easy", function(){ });
-	var dMenuMed = new MenuOption("Medium", function(){ });
-	var dMenuHard = new MenuOption("Hard", function(){ });
+	var dMenuEasy = new MenuOption("Easy", function(){
+		scoreMultiplier = 1;
+		spawnRate = 5;
+		lives.set(10);
+			// These will need balancing
+
+		diffMenu.enabled = false;
+		gamePlay.enabled = true;
+
+		mainList.appendSprite(gamePlay);
+	});
+	var dMenuMed = new MenuOption("Medium", function(){
+		scoreMultiplier = 1;
+		spawnRate = 5;
+		lives.set(10);
+			// These will need balancing
+
+		diffMenu.enabled = false;
+		gamePlay.enabled = true;
+
+		mainList.appendSprite(gamePlay);
+	});
+	var dMenuHard = new MenuOption("Hard", function(){
+		scoreMultiplier = 1;
+		spawnRate = 5;
+		lives.set(10);
+			// These will need balancing
+
+		diffMenu.enabled = false;
+		gamePlay.enabled = true;
+
+		mainList.appendSprite(gamePlay);
+	});
 	var dMenuRtn = new MenuOption("Return to menu", function(){ 
 		diffMenu.enabled = false;
 		mainMenu.enabled = true;
 		
 		mainList.appendSprite(mainMenu);
-		});
+	});
 	
 	dMenu.newOption(dMenuEasy);
 	dMenu.newOption(dMenuMed);
@@ -1059,7 +1091,6 @@ function runGame() {
 	dMenu.center(canvas, renderingContext);
 	
 	diffMenu.appendSprite(dMenu);
-	mainList.appendSprite(diffMenu);
 
 // Options menu ///////////////////////////////////////////////////////////////
 	optsMenu.enabled = false;
