@@ -36,6 +36,7 @@ var lives = new Reactive(0);
 var currentHighScore = new Reactive(0);
 var scoreMultiplier = 0;
 var spawnRate = 0;
+var busy = false;
 
 function addDbgStatus(status) {
 	var para = document.createElement("p");
@@ -988,6 +989,135 @@ function SpriteList() {
 	}
 }
 
+function Patient(x, y) {
+	var that = this;
+
+	this.enabled = true;
+	this.zIndex = 5;
+		// Defaults, to allow this to function as a sprite
+	
+	this.x = x;
+	this.y = y;
+
+	this.type = Math.floor(Math.random() * 8);
+	if(this.type == 8) {
+		this.type = 7;
+	}
+
+	this.sprite = new Sprite("patient" + this.type.toString() + ".jpg", function(x, y) {
+		if(!busy) {
+			that.timer.stop();
+			busy = that;
+
+			var timeout = 0;
+
+			switch(that.type) {
+				case 0:
+				case 4:
+					timeout = 4;
+					break;
+				case 1:
+				case 5:
+					timeout = 6;
+					break;
+				case 2:
+				case 6:
+					timeout = 8;
+					break;
+				case 3:
+				case 7:
+					timeout = 10;
+					break;
+			}
+
+			setTimeout(function() {
+				that.enabled = false;
+				busy = false;
+
+				score.set(score.get() + that.timer.getTime() * scoreMultiplier);
+				schedulePatient(that.x, that.y);
+			}, timeout * 1000);
+		}
+	});
+	this.timer = {};
+
+	switch(this.type) {
+		case 0:
+		case 4:
+			this.timer = new Timer(30);
+			break;
+		case 1:
+		case 5:
+			this.timer = new Timer(24);
+			break;
+		case 2:
+		case 6:
+			this.timer = new Timer(18);
+			break;
+		case 3:
+		case 7:
+			this.timer = new Timer(12);
+			break;
+	}
+
+	this.timer.onTimeout(function() {
+		that.enabled = false;
+		lives.set(lives.get() - 1);
+
+		if(busy == this) {
+			busy = false;
+		}
+
+		schedulePatient(that.x, that.y);
+	});
+
+	this.timer.start();
+
+	this.draw = function(renderingContext) {
+		this.timer.x = this.x + 52;
+		this.timer.y = this.y;
+
+		this.sprite.x = this.x;
+		this.sprite.y = this.y + 50;
+
+		this.sprite.draw(renderingContext);
+		this.timer.draw(renderingContext);
+	}
+
+	this.checkMouse = function(x, y) {
+		return this.sprite.checkMouse(x, y) || this.timer.checkMouse(x, y);
+	}
+
+	this.onMouseHover = function(x, y) {
+		if(this.sprite.checkMouse(x, y)) {
+			this.sprite.onMouseHover(x, y);
+		} else if(this.timer.checkMouse(x, y)) {
+			this.timer.onMouseHover(x, y);
+		}
+	}
+
+	this.onMouseClick = function(x, y) {
+		if(this.sprite.checkMouse(x, y)) {
+			this.sprite.onMouseClick(x, y);
+		} else if(this.timer.checkMouse(x, y)) {
+			this.timer.onMouseClick(x, y);
+		}
+	}
+
+	this.onMouseOut = function() {
+		this.sprite.onMouseOut();
+		this.timer.onMouseOut();
+	}
+}
+
+function schedulePatient(x, y) {
+	setTimeout(function() {
+		var p = new Patient(x, y);
+
+		gamePlay.appendSprite(p);
+	}, Math.floor(Math.random() * spawnRate) * 1000);
+}
+
 function runGame() {
 	var canvas = document.getElementById("mainGame");
 	var renderingContext = canvas.getContext("2d");
@@ -1090,6 +1220,12 @@ function runGame() {
 	intro.onComplete(function() {
 		startScene.enabled = false;
 		gamePlay.enabled = true;
+
+		var firstPatient = new Patient(100, 50);
+		gamePlay.appendSprite(firstPatient);
+
+		schedulePatient(300, 50);
+		schedulePatient(500, 50);
 
 		mainList.appendSprite(gamePlay);
 	});
