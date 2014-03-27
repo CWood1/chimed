@@ -14,12 +14,19 @@ chimed
 
 #Notes
 - Types of patient:
- - Shortness of breath
- - Blood loss
+ - Laceration			- 30s
+ - Break			- 24s
+ - Head injury			- 18s
+ - Blood loss			- 12s
+
+ - Fever			- 30s
+ - Shortness of breath		- 24s
+ - Measles/allergic reaction	- 18s
+ - Coma				- 12s
 
 # Tasks
 ## Connor
-- Make animation slides cross-fade
+- Nothing here :)
 
 ## Cam
 - Nothing here :)
