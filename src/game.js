@@ -239,8 +239,8 @@ function Animation(continuable) {
 
 			this.cont.draw(renderingContext);
 
-			this.skip.x = this.slides[this.activeSlide].width - this.skip.width;
-			this.skip.y = this.slides[this.activeSlide].height - this.skip.height;
+			this.skip.x = this.slides[this.activeSlide].width;
+			this.skip.y = this.slides[this.activeSlide].height;
 
 			this.skip.draw(renderingContext);
 		}
@@ -1247,14 +1247,18 @@ function runGame() {
 	scoreBox.closable = false;
 	scoreBox.open = true;
 
-	incresaeScore = new MenuOption("Update Score", function() {
+	increaseScore = new MenuOption("Update Score", function() {
 		score.set(score.get() + 100);
 	});
-	scoreBox.newOption(incresaeScore);
+	scoreBox.newOption(increaseScore);
 
 	score.onChange(function(value) {
 		scoreBox.message = value.toString();
 	});
+	
+	scoreBox.center(canvas, renderingContext);
+	scoreBox.y = 0
+	scoreBox.x = 0
 
 	gamePlay.appendSprite(scoreBox);
 
@@ -1273,9 +1277,9 @@ function runGame() {
 	});
 
 	livesBox.center(canvas, renderingContext);
-		// Calculate the width
-	livesBox.y = 0;
-	livesBox.x = background.width - livesBox.width;
+		// Calculate the width 
+	livesBox.y = 5 + scoreBox.height;
+	livesBox.x = 0;
 
 	gamePlay.appendSprite(livesBox);
 
