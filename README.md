@@ -12,15 +12,14 @@ chimed
 
 #Notes
 - Types of patient:
- - Laceration			- 30s
- - Break			- 24s
- - Head injury			- 18s
- - Blood loss			- 12s
-
- - Fever			- 30s
- - Shortness of breath		- 24s
- - Measles/allergic reaction	- 18s
- - Coma				- 12s
+ - Laceration			- 30s on the clock, 4s to heal
+ - Break			- 24s on the clock, 6s to heal
+ - Head injury			- 18s on the clock, 8s to heal
+ - Blood loss			- 12s on the clock, 10s to heal
+ - Fever			- 30s on the clock, 4s to heal
+ - Shortness of breath		- 24s on the clock, 6s to heal
+ - Measles/allergic reaction	- 18s on the clock, 8s to heal
+ - Coma				- 12s on the clock, 10s to heal
 
 # Tasks
 ## Connor
