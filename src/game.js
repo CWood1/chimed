@@ -1031,6 +1031,28 @@ function runGame() {
 
 	background.zIndex = -5;
 	gamePlay.appendSprite(background);
+
+	var intro = new Animation(false);
+
+	var slide1 = new Sprite("Start_Slide_First.jpg", function(x, y) {
+
+	});
+
+	var slide2 = new Sprite("Start_Slide_Second.jpg", function(x, y) {
+
+	});
+
+	var slide3 = new Sprite("Start_Slide_Third.jpg", function(x, y) {
+
+	});
+
+	// TODO: Check these timings are correct with Lydia
+	intro.addSlide(slide1, 1500);
+	intro.addSlide(slide2, 1500);
+	intro.addSlide(slide3, 1500);
+
+	// TODO: Add callback to start the game itself (set up initial patients, start spawning of patients, etc.
+	gamePlay.appendSprite(intro);
 	
 // Difficulty menu ////////////////////////////////////////////////////////////
 	diffMenu.enabled = false;
@@ -1053,6 +1075,7 @@ function runGame() {
 		gamePlay.enabled = true;
 
 		mainList.appendSprite(gamePlay);
+		intro.start();
 	});
 	var dMenuMed = new MenuOption("Medium", function(){
 		scoreMultiplier = 1;
