@@ -33,6 +33,7 @@ var sound = new Reactive(true);
 var music = new Reactive(true);
 var score = new Reactive(0);
 var lives = new Reactive(0);
+var currentHighScore = new Reactive(0);
 var scoreMultiplier = 0;
 var spawnRate = 0;
 
@@ -177,6 +178,8 @@ function Animation(continuable) {
 	this.enabled = true;
 	this.continuable = continuable;
 
+	this.completed = false;
+
 	this.skip = new Menu(0, 0);
 	this.cont = new Menu(0, 0);
 
@@ -200,7 +203,8 @@ function Animation(continuable) {
 
 	this.complete = function() {
 		clearTimeout(this.interval);
-		this.enabled = false;
+
+		this.completed = true;
 
 		for(var i = 0; i < this.onCompleteC.length; i++) {
 			this.onCompleteC[i]();
@@ -224,26 +228,36 @@ function Animation(continuable) {
 	}
 
 	this.draw = function(renderingContext) {
-		this.skip.draw(renderingContext);
-			// This will be drawn over; this is to get the width
-		this.slides[this.activeSlide].draw(renderingContext);
+		if(!this.completed) {
+			this.skip.draw(renderingContext);
+				// This will be drawn over; this is to get the width
+			this.slides[this.activeSlide].draw(renderingContext);
 
-		this.cont.x = 0;
-		this.cont.y = this.slides[this.activeSlide].height - this.cont.height;
+			this.cont.x = 0;
+			this.cont.y = this.slides[this.activeSlide].height - this.cont.height;
 
-		this.cont.draw(renderingContext);
+			this.cont.draw(renderingContext);
 
-		this.skip.x = this.slides[this.activeSlide].width - this.skip.width;
-		this.skip.y = this.slides[this.activeSlide].height - this.skip.height;
+			this.skip.x = this.slides[this.activeSlide].width - this.skip.width;
+			this.skip.y = this.slides[this.activeSlide].height - this.skip.height;
 
-		this.skip.draw(renderingContext);
+			this.skip.draw(renderingContext);
+		}
 	}
 
 	this.checkMouse = function(x, y) {
+		if(this.completed) {
+			return false;
+		}
+
 		return this.slides[this.activeSlide].checkMouse(x, y);
 	}
 
 	this.onMouseHover = function(x, y) {
+		if(this.completed) {
+			return;
+		}
+
 		if(this.skip.checkMouse(x, y)) {
 			this.skip.onMouseHover(x, y);
 		} else if(this.continuable && this.cont.checkMouse(x, y)) {
@@ -254,6 +268,10 @@ function Animation(continuable) {
 	}
 
 	this.onMouseClick = function(x, y) {
+		if(this.completed) {
+			return;
+		}
+
 		if(this.skip.checkMouse(x, y)) {
 			this.skip.onMouseClick(x, y);
 		} else if(this.continuable && this.cont.checkMouse(x, y)) {
@@ -264,6 +282,10 @@ function Animation(continuable) {
 	}
 
 	this.onMouseOut = function() {
+		if(this.completed) {
+			return;
+		}
+
 		this.skip.onMouseOut();
 		this.cont.onMouseOut();
 		this.slides[this.activeSlide].onMouseOut();
@@ -273,7 +295,7 @@ function Animation(continuable) {
 		that.activeSlide++;
 
 		if(that.activeSlide >= that.slides.length) {
-			that.enabled = false;
+			this.completed = true;
 
 			for(var i = 0; i < that.onCompleteC.length; i++) {
 				that.onCompleteC[i]();
@@ -284,8 +306,10 @@ function Animation(continuable) {
 	}
 
 	this.start = function() {
+		this.activeSlide = 0;
+		this.completed = false;
 		if(this.slides.length != 0) {
-			this.interval = setTimeout(changeSlides, this.slides[that.activeSlide].duration);
+			this.interval = setTimeout(changeSlides, this.slides[this.activeSlide].duration);
 		}
 	}
 }
@@ -682,10 +706,10 @@ function MessageBox(x, y, titleText, message, scale) {
 
 		var buttonWidth = 0;
 		if(this.options.length != 0) {
-			var cur = 2*this.border + 2;
+			var cur = 2*this.border;
 
 			for(var i = 0; i < this.options.length; i++) {
-				cur += 2*this.border + renderingContext.measureText(this.options[i].text).width + 2;
+				cur += 2*this.border + renderingContext.measureText(this.options[i].text).width;
 			}
 
 			if(cur > this.width) {
@@ -786,13 +810,29 @@ function MessageBox(x, y, titleText, message, scale) {
 		lines = this.message.split("\n");
 
 		for(var i = 0; i < lines.length; i++) {
-			if(renderingContext.measureText(lines[i]).width + 2*this.border + 2 > this.width) {
-				this.width = renderingContext.measureText(lines[i]).width + 2*this.border + 2;
+			if(renderingContext.measureText(lines[i]).width + 2*this.border > this.width) {
+				this.width = renderingContext.measureText(lines[i]).width + 2*this.border;
 			}
 		}
 
-		if(renderingContext.measureText(this.titleText).width + this.lineHeight > this.width) {
-			this.width = renderingContext.measureText(this.titleText).width + this.lineHeight + 2*this.border;
+		if(renderingContext.measureText(this.titleText).width + (this.closable ? this.lineHeight : 0)
+				+ 2*this.border > this.width) {
+			this.width = renderingContext.measureText(this.titleText).width +
+				(this.closable ? this.lineHeight : 0) + 2*this.border;
+		}
+
+		if(this.options.length != 0) {
+			var cur = 2*this.border;
+
+			for(var i = 0; i < this.options.length; i++) {
+				cur += 2*this.border + renderingContext.measureText(this.options[i].text).width;
+			}
+
+			if(cur > this.width) {
+				this.width = cur;
+			}
+
+			this.height += this.lineHeight + 6*this.border;
 		}
 
 		this.x = (canvas.width / 2) - (this.width / 2);
@@ -973,6 +1013,8 @@ function runGame() {
 	optsMenu = new SpriteList();
 	credits = new SpriteList();
 	highScore = new SpriteList();
+	startScene = new SpriteList();
+	gameOver = new SpriteList();
 
 // Main menu //////////////////////////////////////////////////////////////////
 	mainMenu.enabled = true;
@@ -1022,15 +1064,8 @@ function runGame() {
 
 	mainList.appendSprite(mainMenu);
 
-// Gameplay ///////////////////////////////////////////////////////////////////
-	gamePlay.enabled = false;
-
-	var background = new Sprite("background.jpg", function(x, y) {
-
-	});
-
-	background.zIndex = -5;
-	gamePlay.appendSprite(background);
+// Starting Cutscene //////////////////////////////////////////////////////////
+	startScene.enabled = false;
 
 	var intro = new Animation(false);
 
@@ -1051,9 +1086,63 @@ function runGame() {
 	intro.addSlide(slide2, 1500);
 	intro.addSlide(slide3, 1500);
 
+	intro.zIndex = 100;
+	intro.onComplete(function() {
+		startScene.enabled = false;
+		gamePlay.enabled = true;
+
+		mainList.appendSprite(gamePlay);
+	});
+
 	// TODO: Add callback to start the game itself (set up initial patients, start spawning of patients, etc.
-	gamePlay.appendSprite(intro);
-	
+	startScene.appendSprite(intro);
+
+// Gameplay ///////////////////////////////////////////////////////////////////
+	gamePlay.enabled = false;
+
+	var background = new Sprite("background.jpg", function(x, y) {
+
+	});
+
+	background.zIndex = -5;
+	gamePlay.appendSprite(background);
+
+	var scoreBox = new MessageBox(0, 0, "Current Score", score.get().toString());
+	scoreBox.closable = false;
+	scoreBox.open = true;
+
+	incresaeScore = new MenuOption("Update Score", function() {
+		score.set(score.get() + 100);
+	});
+	scoreBox.newOption(incresaeScore);
+
+	score.onChange(function(value) {
+		scoreBox.message = value.toString();
+	});
+
+	gamePlay.appendSprite(scoreBox);
+
+	var livesBox = new MessageBox(0, 0, "Lives", score.get().toString());
+	livesBox.closable = false;
+	livesBox.open = true;
+
+	// TODO: This here's debugging code, and will not be in the release version
+	decreaseLives = new MenuOption("Update Lives", function() {
+		lives.set(lives.get() - 1);
+	});
+	livesBox.newOption(decreaseLives);
+
+	lives.onChange(function(value) {
+		livesBox.message = value.toString();
+	});
+
+	livesBox.center(canvas, renderingContext);
+		// Calculate the width
+	livesBox.y = 0;
+	livesBox.x = background.width - livesBox.width;
+
+	gamePlay.appendSprite(livesBox);
+
 // Difficulty menu ////////////////////////////////////////////////////////////
 	diffMenu.enabled = false;
 	
@@ -1072,9 +1161,9 @@ function runGame() {
 			// These will need balancing
 
 		diffMenu.enabled = false;
-		gamePlay.enabled = true;
+		startScene.enabled = true;
 
-		mainList.appendSprite(gamePlay);
+		mainList.appendSprite(startScene);
 		intro.start();
 	});
 	var dMenuMed = new MenuOption("Medium", function(){
@@ -1084,9 +1173,10 @@ function runGame() {
 			// These will need balancing
 
 		diffMenu.enabled = false;
-		gamePlay.enabled = true;
+		startScene.enabled = true;
 
-		mainList.appendSprite(gamePlay);
+		mainList.appendSprite(startScene);
+		intro.start();
 	});
 	var dMenuHard = new MenuOption("Hard", function(){
 		scoreMultiplier = 1;
@@ -1095,9 +1185,10 @@ function runGame() {
 			// These will need balancing
 
 		diffMenu.enabled = false;
-		gamePlay.enabled = true;
+		startScene.enabled = true;
 
-		mainList.appendSprite(gamePlay);
+		mainList.appendSprite(startScene);
+		intro.start();
 	});
 	var dMenuRtn = new MenuOption("Return to menu", function(){ 
 		diffMenu.enabled = false;
@@ -1193,7 +1284,11 @@ function runGame() {
 	hBackground.zIndex = -1;
 	highScore.appendSprite(hBackground);
 
-	hScore = new MessageBox(0, 0, "High Score", score.get().toString());
+	hScore = new MessageBox(0, 0, "High Score", currentHighScore.get().toString());
+
+	currentHighScore.onChange(function(value) {
+		hScore.message = value.toString();
+	});
 
 	hScoreBack = new MenuOption("Back", function() {
 		highScore.enabled = false;
@@ -1208,7 +1303,49 @@ function runGame() {
 	hScore.center(canvas, renderingContext);
 	highScore.appendSprite(hScore);
 
+// Game Over //////////////////////////////////////////////////////////////////
+	gameOver.enabled = false;
+
+	// TODO: This will need writing properly, once the animation images come through
+	goBackground = new Sprite("background.jpg", function(x, y) { });
+	goBackground.zIndex = -1;
+	gameOver.appendSprite(goBackground);
+
+	gameOverBox = new MessageBox(0, 0, "Game Over", "Oh dear, you are dead.");
+	gameOverBox.closable = false;
+	gameOverBox.open = true;
+
+	gameOverButton = new MenuOption("Back to Main Menu", function() {
+		gameOver.enabled = false;
+		mainMenu.enabled = true;
+
+		mainList.appendSprite(mainMenu);
+
+		if(score.get() > currentHighScore.get()) {
+			currentHighScore.set(score.get());
+		}
+
+		score.set(0);
+		lives.set(0);
+	});
+
+	gameOverBox.newOption(gameOverButton);
+	
+	gameOverBox.center(canvas, renderingContext);
+	gameOver.appendSprite(gameOverBox);
+
 // Other stuff ////////////////////////////////////////////////////////////////
+	lives.onChange(function(value) {
+		if(value == 0) {
+			gamePlay.enabled = false;
+			gameOver.enabled = true;
+
+			mainList.appendSprite(gameOver);
+			mainList.draw(renderingContext);
+				// Force a redraw
+		}
+	});
+
 	document.addEventListener('keydown', function(event) {
 		if(event.keyCode == 37) {
 			// LEFT
