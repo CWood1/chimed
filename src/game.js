@@ -1,3 +1,8 @@
+// TODO: Cam, I've saved the canvas width and height in the globals, canvasWidth and canvasHeight. Can you go through and,
+// for all the center() functions, and anywhere else where canvas is passed for the sole purpose of getting its dimensions,
+// and for that matter if I've missed anywhere where I still reference an image for the canvas dimensions, can you correct
+// this? Thanks
+
 function Reactive(initial) {
 	this.value = initial;
 	this.callbacks = [];
@@ -37,6 +42,9 @@ var currentHighScore = new Reactive(0);
 var scoreMultiplier = 0;
 var spawnRate = 0;
 var busy = false;
+
+var canvasWidth = 0;
+var canvasHeight = 0;
 
 function addDbgStatus(status) {
 	var para = document.createElement("p");
@@ -125,22 +133,34 @@ function EventSound(file) {
 }
 
 function Sprite(image, onMouseClick) {
+	var that = this;
 	this.x = 0;				// Store the x and y coordinates
 	this.y = 0;
 	this.zIndex = 0;		// This is used for image sequencing
 
-	this.image = document.createElement("img");
-	this.image.src = image;	// Save the image itself
-	document.getElementById("imageStorage").appendChild(this.image);	// Place the image in the DOM
+	this.width = 0;
+	this.height = 0;
+	this.loaded = false;
 
-	this.width = this.image.width;
-	this.height = this.image.height;
+	this.image = new Image();
+	this.image.onload = function() {
+		that.width = this.width;
+		that.height = this.height;
+
+		that.loaded = true;
+	}
+
+	this.image.src = image;	// Save the image itself
 
 	this.enabled = true;
 
 	// Methods
 	this.draw = draw;
 	function draw(renderingContext) {
+		if(!this.loaded) {
+			return;
+		}
+
 		renderingContext.drawImage(this.image, this.x, this.y);
 	}
 	
@@ -235,12 +255,12 @@ function Animation(continuable) {
 			this.slides[this.activeSlide].draw(renderingContext);
 
 			this.cont.x = 0;
-			this.cont.y = this.slides[this.activeSlide].height - this.cont.height;
+			this.cont.y = canvasHeight - this.cont.height;
 
 			this.cont.draw(renderingContext);
 
-			this.skip.x = this.slides[this.activeSlide].width - this.skip.width;
-			this.skip.y = this.slides[this.activeSlide].height - this.skip.height;
+			this.skip.x = canvasWidth - this.skip.width;
+			this.skip.y = canvasHeight - this.skip.height;
 
 			this.skip.draw(renderingContext);
 		}
@@ -1122,6 +1142,9 @@ function runGame() {
 	var canvas = document.getElementById("mainGame");
 	var renderingContext = canvas.getContext("2d");
 
+	canvasWidth = canvas.width;
+	canvasHeight = canvas.height;
+
 	var soundSupport = checkSoundSupport();
 	var musicFile = "";
 
@@ -1250,7 +1273,7 @@ function runGame() {
 	incresaeScore = new MenuOption("Update Score", function() {
 		score.set(score.get() + 100);
 	});
-	scoreBox.newOption(incresaeScore);
+//	scoreBox.newOption(incresaeScore);
 
 	score.onChange(function(value) {
 		scoreBox.message = value.toString();
@@ -1266,7 +1289,7 @@ function runGame() {
 	decreaseLives = new MenuOption("Update Lives", function() {
 		lives.set(lives.get() - 1);
 	});
-	livesBox.newOption(decreaseLives);
+//	livesBox.newOption(decreaseLives);
 
 	lives.onChange(function(value) {
 		livesBox.message = value.toString();
@@ -1275,7 +1298,7 @@ function runGame() {
 	livesBox.center(canvas, renderingContext);
 		// Calculate the width
 	livesBox.y = 0;
-	livesBox.x = background.width - livesBox.width;
+	livesBox.x = canvasWidth - livesBox.width;
 
 	gamePlay.appendSprite(livesBox);
 
