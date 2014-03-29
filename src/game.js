@@ -43,6 +43,8 @@ var scoreMultiplier = 0;
 var spawnRate = 0;
 var busy = false;
 
+var currentPatients = new Array();
+
 var canvasWidth = 0;
 var canvasHeight = 0;
 
@@ -1052,6 +1054,7 @@ function Patient(x, y) {
 
 			setTimeout(function() {
 				that.enabled = false;
+				Ward(null,x,y,false);
 				busy = false;
 
 				score.set(score.get() + that.timer.getTime() * scoreMultiplier);
@@ -1082,6 +1085,7 @@ function Patient(x, y) {
 
 	this.timer.onTimeout(function() {
 		that.enabled = false;
+		Ward(null,x,y,false);
 		lives.set(lives.get() - 1);
 
 		if(busy == this) {
@@ -1094,6 +1098,8 @@ function Patient(x, y) {
 	this.timer.start();
 
 	this.draw = function(renderingContext) {
+		
+		
 		this.timer.x = this.x + 52;
 		this.timer.y = this.y;
 
@@ -1102,6 +1108,7 @@ function Patient(x, y) {
 
 		this.sprite.draw(renderingContext);
 		this.timer.draw(renderingContext);
+		
 	}
 
 	this.checkMouse = function(x, y) {
@@ -1133,9 +1140,75 @@ function Patient(x, y) {
 function schedulePatient(x, y) {
 	setTimeout(function() {
 		var p = new Patient(x, y);
-
+		Ward(p,x,y,true);
+		
 		gamePlay.appendSprite(p);
 	}, Math.floor(Math.random() * spawnRate) * 1000);
+}
+
+function Ward(patient,x,y,append) {
+
+	this.append = append
+	
+	this.x = x;
+	this.y = y;
+
+	this.patient = patient;
+	
+	if(this.append==true){
+		currentPatients.push(this.patient);
+	}
+	
+	var n_1 = false;
+	var n_2 = false;
+	var n_3 = false;
+
+	
+	for (var i = 0; i < currentPatients.length; i++){
+		if(currentPatients[i].enabled == false){
+			if(currentPatients[i].x == 100){
+				n_1 = false;
+			} else if(currentPatients[i].x == 300){
+				n_2 = false;
+			} else if(currentPatients[i].x == 500){
+				n_3 = false;
+			}
+			currentPatients.splice(currentPatients[i],1);
+			
+		}
+	}
+	
+	for (var i = 0; i < currentPatients.length; i++){
+		if(currentPatients[i].x == 100){
+			n_1 = true;
+		} else if(currentPatients[i].x == 300){
+			n_2 = true;
+		} else if(currentPatients[i].x == 500){
+			n_3 = true;
+		}
+	}
+
+	if(n_1==false&&n_2==false&&n_3==false){
+		this.background = new Sprite("play_backgrounds/Game_Background_A_B_C_Closed.jpg", function(x, y) {});
+	} else if(n_1&&n_2&&n_3){
+		this.background = new Sprite("play_backgrounds/Game_Background_A_B_C_Open.jpg", function(x, y) {});	
+	} else if(n_1==false&&n_2==false&&n_3){
+		this.background = new Sprite("play_backgrounds/Game_Background_A_B_Closed_C_Open.jpg", function(x, y) {});	
+	} else if(n_1==false&&n_2&&n_3==false){
+		this.background = new Sprite("play_backgrounds/Game_Background_A_C_Closed_B_Open.jpg", function(x, y) {});	
+	} else if(n_1==false&&n_2&&n_3){
+		this.background = new Sprite("play_backgrounds/Game_Background_A_Closed_B_C_Open.jpg", function(x, y) {});	
+	} else if(n_1&&n_2==false&&n_3==false){
+		this.background = new Sprite("play_backgrounds/Game_Background_B_C_Closed_A_Open.jpg", function(x, y) {});	
+	} else if(n_1&&n_2==false&&n_3){
+		this.background = new Sprite("play_backgrounds/Game_Background_B_Closed_A_C_Open.jpg", function(x, y) {});	
+	} else if(n_1&&n_2&&n_3==false){
+		this.background = new Sprite("play_backgrounds/Game_Background_C_Closed_A_B_Open.jpg", function(x, y) {});
+	}
+			
+	this.background.zIndex = -5;
+	
+	gamePlay.appendSprite(this.background);
 }
 
 function runGame() {
@@ -1245,6 +1318,7 @@ function runGame() {
 		gamePlay.enabled = true;
 
 		var firstPatient = new Patient(100, 50);
+		Ward(firstPatient,100,50,true);
 		gamePlay.appendSprite(firstPatient);
 
 		schedulePatient(300, 50);
@@ -1264,7 +1338,7 @@ function runGame() {
 	});
 
 	background.zIndex = -5;
-	gamePlay.appendSprite(background);
+	//gamePlay.appendSprite(background);
 
 	var scoreBox = new MessageBox(0, 0, "Current Score", score.get().toString());
 	scoreBox.closable = false;
