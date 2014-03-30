@@ -858,6 +858,17 @@ function MessageBox(x, y, titleText, message, scale) {
 
 		this.x = (canvas.width / 2) - (this.width / 2);
 		this.y = (canvas.height / 2) - (this.height / 2);
+
+		this.width += 2*this.border;
+			// For reasons unbeknownst to me, I set the border to
+			// be this.width + 2*this.border. Why, I don't know.
+			// Must rewrite draw to be more robust. For now, this
+			// should fix it. Also, need another function to 
+			// calculate the dimensions without changing anything
+			// else, to lessen code duplication.
+			//
+			// TODO: Cam, could you have a go at some of this
+			// please?
 	}
 
 	this.checkMouse = function(x, y) {
