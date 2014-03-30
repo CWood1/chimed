@@ -714,15 +714,15 @@ function MessageBox(x, y, titleText, message, scale) {
 			// One border for the top, one for the bottom, and one between the title and the message
 
 		for(var i = 0; i < lines.length; i++) {
-			if(renderingContext.measureText(lines[i]).width + 2*this.border + 2 > this.width) {
-				this.width = renderingContext.measureText(lines[i]).width + 2*this.border + 2;
+			if(renderingContext.measureText(lines[i]).width + 2*this.border > this.width) {
+				this.width = renderingContext.measureText(lines[i]).width + 2*this.border;
 			}
 		}
 
 		if(renderingContext.measureText(this.titleText).width +
-				(this.closable ? this.lineHeight : 0) + 2*this.border + 2 > this.width) {
+				(this.closable ? this.lineHeight : 0) + 2*this.border > this.width) {
 			this.width = renderingContext.measureText(this.titleText).width +
-				(this.closable ? this.lineHeight : 0) +	2*this.border + 2;
+				(this.closable ? this.lineHeight : 0) +	2*this.border;
 		}
 
 		var buttonWidth = 0;
