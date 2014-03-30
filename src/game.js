@@ -1132,14 +1132,14 @@ function Patient(x, y) {
 
 function Ward() {
 	this.backgrounds = [
-		new Sprite("play_backgrounds/abc.jpg", function(x, y) { }),
-		new Sprite("play_backgrounds/abC.jpg", function(x, y) { }),
-		new Sprite("play_backgrounds/aBc.jpg", function(x, y) { }),
-		new Sprite("play_backgrounds/aBC.jpg", function(x, y) { }),
-		new Sprite("play_backgrounds/Abc.jpg", function(x, y) { }),
-		new Sprite("play_backgrounds/AbC.jpg", function(x, y) { }),
-		new Sprite("play_backgrounds/ABc.jpg", function(x, y) { }),
-		new Sprite("play_backgrounds/ABC.jpg", function(x, y) { })];
+		new Sprite("play_backgrounds/0.jpg", function(x, y) { }),
+		new Sprite("play_backgrounds/1.jpg", function(x, y) { }),
+		new Sprite("play_backgrounds/2.jpg", function(x, y) { }),
+		new Sprite("play_backgrounds/3.jpg", function(x, y) { }),
+		new Sprite("play_backgrounds/4.jpg", function(x, y) { }),
+		new Sprite("play_backgrounds/5.jpg", function(x, y) { }),
+		new Sprite("play_backgrounds/6.jpg", function(x, y) { }),
+		new Sprite("play_backgrounds/7.jpg", function(x, y) { })];
 	this.activeBackground = 0;
 
 	this.enabled = true;
