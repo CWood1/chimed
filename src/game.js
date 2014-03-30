@@ -1366,15 +1366,19 @@ function runGame() {
 	gamePlay.enabled = false;
 
 	var scoreBox = new MessageBox(0, 0, "Current Score", score.get().toString());
+	scoreBox.closable = false;
+	scoreBox.open = true;
+
 	score.onChange(function(value) {
 		scoreBox.message = value.toString();
 	});
 
-	scoreBox.closable = false;
-	scoreBox.open = true;
 	gamePlay.appendSprite(scoreBox);
 
 	var livesBox = new MessageBox(0, 0, "Lives", score.get().toString());
+	livesBox.closable = false;
+	livesBox.open = true;
+
 	lives.onChange(function(value) {
 		livesBox.message = value.toString();
 	});
@@ -1384,8 +1388,6 @@ function runGame() {
 	livesBox.y = 0;
 	livesBox.x = canvasWidth - livesBox.width;
 
-	livesBox.closable = false;
-	livesBox.open = true;
 	gamePlay.appendSprite(livesBox);
 
 	var ward = new Ward();
