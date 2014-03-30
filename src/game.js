@@ -43,8 +43,6 @@ var scoreMultiplier = 0;
 var spawnRate = 0;
 var busy = false;
 
-var currentPatients = new Array();
-
 var canvasWidth = 0;
 var canvasHeight = 0;
 
@@ -1054,11 +1052,9 @@ function Patient(x, y) {
 
 			setTimeout(function() {
 				that.enabled = false;
-				Ward(null,x,y,false);
 				busy = false;
 
 				score.set(score.get() + that.timer.getTime() * scoreMultiplier);
-				schedulePatient(that.x, that.y);
 			}, timeout * 1000);
 		}
 	});
@@ -1085,14 +1081,11 @@ function Patient(x, y) {
 
 	this.timer.onTimeout(function() {
 		that.enabled = false;
-		Ward(null,x,y,false);
 		lives.set(lives.get() - 1);
 
 		if(busy == this) {
 			busy = false;
 		}
-
-		schedulePatient(that.x, that.y);
 	});
 
 	this.timer.start();
@@ -1137,78 +1130,120 @@ function Patient(x, y) {
 	}
 }
 
-function schedulePatient(x, y) {
-	setTimeout(function() {
-		var p = new Patient(x, y);
-		Ward(p,x,y,true);
-		
-		gamePlay.appendSprite(p);
-	}, Math.floor(Math.random() * spawnRate) * 1000);
-}
+function Ward() {
+	this.backgrounds = [
+		new Sprite("play_backgrounds/abc.jpg", function(x, y) { }),
+		new Sprite("play_backgrounds/abC.jpg", function(x, y) { }),
+		new Sprite("play_backgrounds/aBc.jpg", function(x, y) { }),
+		new Sprite("play_backgrounds/aBC.jpg", function(x, y) { }),
+		new Sprite("play_backgrounds/Abc.jpg", function(x, y) { }),
+		new Sprite("play_backgrounds/AbC.jpg", function(x, y) { }),
+		new Sprite("play_backgrounds/ABc.jpg", function(x, y) { }),
+		new Sprite("play_backgrounds/ABC.jpg", function(x, y) { })];
+	this.activeBackground = 0;
 
-function Ward(patient,x,y,append) {
+	this.enabled = true;
+	this.zIndex = 0;
 
-	this.append = append
-	
-	this.x = x;
-	this.y = y;
+	this.patients = [false, false, false];
 
-	this.patient = patient;
-	
-	if(this.append==true){
-		currentPatients.push(this.patient);
-	}
-	
-	var n_1 = false;
-	var n_2 = false;
-	var n_3 = false;
+	this.draw = function(renderingContext) {
+		this.activeBackground = 0;
 
-	
-	for (var i = 0; i < currentPatients.length; i++){
-		if(currentPatients[i].enabled == false){
-			if(currentPatients[i].x == 100){
-				n_1 = false;
-			} else if(currentPatients[i].x == 300){
-				n_2 = false;
-			} else if(currentPatients[i].x == 500){
-				n_3 = false;
+		if(this.patients[0]) {
+			this.activeBackground += 4;
+		}
+
+		if(this.patients[1]) {
+			this.activeBackground += 2;
+		}
+
+		if(this.patients[2]) {
+			this.activeBackground += 1;
+		}
+
+		this.backgrounds[this.activeBackground].draw(renderingContext);
+
+		for(var i = 0; i < this.patients.length; i++) {
+			if(this.patients[i] != false && this.patients[i].enabled) {
+				this.patients[i].draw(renderingContext);
+			} else if(this.patients[i]) {
+				this.patients[i] = false;
+					// If it is disabled, remove it from the list
+					// Do not schedule a patient twice
+				this.schedulePatient(i);
 			}
-			currentPatients.splice(currentPatients[i],1);
-			
-		}
-	}
-	
-	for (var i = 0; i < currentPatients.length; i++){
-		if(currentPatients[i].x == 100){
-			n_1 = true;
-		} else if(currentPatients[i].x == 300){
-			n_2 = true;
-		} else if(currentPatients[i].x == 500){
-			n_3 = true;
 		}
 	}
 
-	if(n_1==false&&n_2==false&&n_3==false){
-		this.background = new Sprite("play_backgrounds/Game_Background_A_B_C_Closed.jpg", function(x, y) {});
-	} else if(n_1&&n_2&&n_3){
-		this.background = new Sprite("play_backgrounds/Game_Background_A_B_C_Open.jpg", function(x, y) {});	
-	} else if(n_1==false&&n_2==false&&n_3){
-		this.background = new Sprite("play_backgrounds/Game_Background_A_B_Closed_C_Open.jpg", function(x, y) {});	
-	} else if(n_1==false&&n_2&&n_3==false){
-		this.background = new Sprite("play_backgrounds/Game_Background_A_C_Closed_B_Open.jpg", function(x, y) {});	
-	} else if(n_1==false&&n_2&&n_3){
-		this.background = new Sprite("play_backgrounds/Game_Background_A_Closed_B_C_Open.jpg", function(x, y) {});	
-	} else if(n_1&&n_2==false&&n_3==false){
-		this.background = new Sprite("play_backgrounds/Game_Background_B_C_Closed_A_Open.jpg", function(x, y) {});	
-	} else if(n_1&&n_2==false&&n_3){
-		this.background = new Sprite("play_backgrounds/Game_Background_B_Closed_A_C_Open.jpg", function(x, y) {});	
-	} else if(n_1&&n_2&&n_3==false){
-		this.background = new Sprite("play_backgrounds/Game_Background_C_Closed_A_B_Open.jpg", function(x, y) {});
+	this.checkMouse = function(x, y) {
+		return this.backgrounds[this.activeBackground].checkMouse(x, y);
 	}
-			
-	this.background.zIndex = -5;
+
+	this.onMouseHover = function(x, y) {
+		for(var i = 0; i < this.patients.length; i++) {
+			if(this.patients[i]) {
+				if(this.patients[i].checkMouse(x, y)) {
+					this.patients[i].onMouseHover(x, y);
+					this.background.onMouseOut(x, y);
+				} else {
+					this.patients[i].onMouseOut(x, y);
+				}
+			}
+		}
+
+		if(this.backgrounds[this.activeBackground].checkMouse(x, y)) {
+			this.backgrounds[this.activeBackground].onMouseHover(x, y);
+		}
+	}
+
+	this.onMouseClick = function(x, y) {
+		for(var i = 0; i < this.patients.length; i++) {
+			if(this.patients[i] && this.patients[i].checkMouse(x, y)) {
+				this.patients[i].onMouseClick(x, y);
+				return;
+			}
+		}
+
+		if(this.backgrounds[this.activeBackground].checkMouse(x, y)) {
+			this.backgrounds[this.activeBackground].onMouseClick(x, y);
+		}
+	}
 	
-	gamePlay.appendSprite(this.background);
+	this.onMouseOut = function() {
+		for(var i = 0; i < this.patients.length; i++) {
+			if(this.patients[i])
+				this.patients[i].onMouseOut();
+		}
+
+		this.backgrounds[this.activeBackground].onMouseOut();
+	}
+
+	var that = this;
+	this.schedulePatient = function(n) {
+		setTimeout(function() {
+			that.createPatient(n);
+		}, Math.floor(Math.random() * spawnRate) * 1000);
+	}
+
+	this.createPatient = function(n) {
+		var p;
+
+		// TODO: get these positioned correctly
+		switch(n) {
+			case 0:
+				p = new Patient(0, 150);
+				break;
+			case 1:
+				p = new Patient(150, 150);
+				break;
+			case 2:
+				p = new Patient(300, 150);
+				break;
+		}
+
+		this.patients[n] = p;
+	}
 }
 
 function runGame() {
@@ -1317,12 +1352,9 @@ function runGame() {
 		startScene.enabled = false;
 		gamePlay.enabled = true;
 
-		var firstPatient = new Patient(100, 50);
-		Ward(firstPatient,100,50,true);
-		gamePlay.appendSprite(firstPatient);
-
-		schedulePatient(300, 50);
-		schedulePatient(500, 50);
+		ward.createPatient(0);
+		ward.schedulePatient(1);
+		ward.schedulePatient(2);
 
 		mainList.appendSprite(gamePlay);
 	});
@@ -1333,48 +1365,31 @@ function runGame() {
 // Gameplay ///////////////////////////////////////////////////////////////////
 	gamePlay.enabled = false;
 
-	var background = new Sprite("background.jpg", function(x, y) {
-
-	});
-
-	background.zIndex = -5;
-	//gamePlay.appendSprite(background);
-
 	var scoreBox = new MessageBox(0, 0, "Current Score", score.get().toString());
-	scoreBox.closable = false;
-	scoreBox.open = true;
-
-	incresaeScore = new MenuOption("Update Score", function() {
-		score.set(score.get() + 100);
-	});
-//	scoreBox.newOption(incresaeScore);
-
 	score.onChange(function(value) {
 		scoreBox.message = value.toString();
 	});
 
+	scoreBox.closable = false;
+	scoreBox.open = true;
 	gamePlay.appendSprite(scoreBox);
 
 	var livesBox = new MessageBox(0, 0, "Lives", score.get().toString());
-	livesBox.closable = false;
-	livesBox.open = true;
-
-	// TODO: This here's debugging code, and will not be in the release version
-	decreaseLives = new MenuOption("Update Lives", function() {
-		lives.set(lives.get() - 1);
-	});
-//	livesBox.newOption(decreaseLives);
-
 	lives.onChange(function(value) {
 		livesBox.message = value.toString();
 	});
 
-	livesBox.center(canvas, renderingContext);
 		// Calculate the width
+	livesBox.center(canvas, renderingContext);
 	livesBox.y = 0;
 	livesBox.x = canvasWidth - livesBox.width;
 
+	livesBox.closable = false;
+	livesBox.open = true;
 	gamePlay.appendSprite(livesBox);
+
+	var ward = new Ward();
+	gamePlay.appendSprite(ward);
 
 // Difficulty menu ////////////////////////////////////////////////////////////
 	diffMenu.enabled = false;
