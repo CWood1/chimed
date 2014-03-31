@@ -305,6 +305,9 @@ function Timer(startTime, scale) {
 		scale = 1;
 	}
 
+	this.enabled = true;
+	this.zIndex = 0;
+
 	this.time = startTime;
 	this.onSecondC = [];
 	this.onTimeoutC = [];
@@ -312,7 +315,6 @@ function Timer(startTime, scale) {
 	this.x = 0;
 	this.y = 0;
 	this.radius = 20*scale;
-	this.enabled = true;
 
 	this.textX = 0;
 	this.textY = 0;
@@ -320,7 +322,6 @@ function Timer(startTime, scale) {
 	this.fontSize = 10*scale;
 
 	this.interval = {};
-	this.selfDisabling = true;
 
 	this.draw = function(renderingContext) {
 		renderingContext.strokeStyle = "black";
@@ -397,10 +398,7 @@ function Timer(startTime, scale) {
 
 			if(that.time === 0) {
 				clearInterval(that.interval);
-
-				if(that.selfDisabling) {
-					that.enabled = false;
-				}
+				that.enabled = false;
 
 				for(var i = 0; i < that.onTimeoutC.length; i++) {
 					that.onTimeoutC[i]();
