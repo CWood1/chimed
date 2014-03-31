@@ -41,15 +41,6 @@ var busy = false;
 var canvasWidth = 0;
 var canvasHeight = 0;
 
-function addDbgStatus(status) {
-	var para = document.createElement("p");
-	para.innerHTML = status;
-	document.getElementById("debugConsole").appendChild(para);
-	//Makes the debug window scroll to the bottom every time a new status occurs. 
-	document.getElementById("debugConsole").scrollTop = document.getElementById("debugConsole").scrollHeight;
-	return para;
-}
-
 function pageToLocalCoords(x, y) {
 	var canvas = document.getElementById("mainGame");
 	
