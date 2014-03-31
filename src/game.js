@@ -1216,13 +1216,13 @@ function Ward() {
 		// TODO: get these positioned correctly
 		switch(n) {
 			case 0:
-				p = new Patient(0, 150);
+				p = new Patient(35, 125);
 				break;
 			case 1:
-				p = new Patient(150, 150);
+				p = new Patient(245, 125);
 				break;
 			case 2:
-				p = new Patient(300, 150);
+				p = new Patient(465, 125);
 				break;
 		}
 
