@@ -10,15 +10,15 @@ function Reactive(initial) {
 				this.callbacks[i](value);
 			}
 		}
-	}
+	};
 
 	this.get = function() {
 		return this.value;
-	}
+	};
 
 	this.onChange = function(callback) {
 		this.callbacks.push(callback);
-	}
+	};
 
 	this.offChange = function(callback) {
 		for(var i = 0; i < this.callbacks.length; i++) {
@@ -26,7 +26,7 @@ function Reactive(initial) {
 				this.callbacks.splice(i, 1);
 			}
 		}
-	}
+	};
 }
 
 var sound = new Reactive(true);
@@ -52,11 +52,11 @@ function pageToLocalCoords(x, y) {
 }
 
 function checkSoundSupport() {
-	audio = new Audio();
+	var audio = new Audio();
 
-	if(audio.canPlayType('audio/ogg; codecs="vorbis"') != "") {
+	if(audio.canPlayType('audio/ogg; codecs="vorbis"') !== "") {
 		return 1;
-	} else if(audio.canPlayType('audio/mp3') != "") {
+	} else if(audio.canPlayType('audio/mp3') !== "") {
 		return 2;
 	} else {
 		// Give up
@@ -84,11 +84,11 @@ function Music(file) {
 		if(music.get()) {
 			this.audio.play();
 		}
-	}
+	};
 
 	this.stop = function() {
 		this.audio.pause();
-	}
+	};
 
 	this.audio.addEventListener('ended', function() {
 		this.currentTime = 0;
@@ -99,7 +99,7 @@ function Music(file) {
 	}, false);
 
 	music.onChange(function(value) {
-		if(value == true) {
+		if(value === true) {
 			that.audio.currentTime = 0;
 
 			that.audio.play();
@@ -115,11 +115,11 @@ function Music(file) {
 
 function EventSound(file) {
 	if(sound.get()) {
-		audio = new Sound(file);	
+		var audio = new Sound(file);	
 		audio.play();
 
 		sound.onChange(function(value) {
-			if(value == false) {
+			if(value === false) {
 				audio.pause();
 			}
 				// No onchange to true, as by that time, the sound will have gone
@@ -140,7 +140,7 @@ function Sprite(image, onMouseClick) {
 	this.image = new Image();
 	this.image.onload = function() {
 		that.loaded = true;
-	}
+	};
 
 	this.image.src = image;	// Save the image itself
 
@@ -151,7 +151,7 @@ function Sprite(image, onMouseClick) {
 		}
 
 		renderingContext.drawImage(this.image, this.x, this.y);
-	}
+	};
 	
 	this.checkMouse = function(x, y) {
 		if(this.x <= x && this.y <= y && this.x + this.image.width >= x && this.y + this.image.height >= y) {
@@ -159,17 +159,17 @@ function Sprite(image, onMouseClick) {
 		} else {
 			return false;
 		}
-	}
+	};
 	
 	this.onMouseHover = function(x, y) {
 
-	}
+	};
 
 	this.onMouseClick = onMouseClick;
 
 	this.onMouseOut = function() {
 
-	}
+	};
 }
 
 function Animation(continuable) {
@@ -216,23 +216,23 @@ function Animation(continuable) {
 		for(var i = 0; i < this.onCompleteC.length; i++) {
 			this.onCompleteC[i]();
 		}
-	}
+	};
 
 	this.nextFrame = function() {
 		clearTimeout(this.interval);
 		changeSlides();
-	}
+	};
 
 	this.addSlide = function(slide, duration) {
 		var newSlide = slide;
 		newSlide.duration = duration;
 
 		this.slides.push(newSlide);
-	}
+	};
 
 	this.onComplete = function(callback) {
 		this.onCompleteC.push(callback);
-	}
+	};
 
 	this.draw = function(renderingContext) {
 		this.skip.computeDimensions(renderingContext);
@@ -249,11 +249,11 @@ function Animation(continuable) {
 		this.skip.y = this.slides[this.activeSlide].image.height - this.skip.height;
 
 		this.skip.draw(renderingContext);
-	}
+	};
 
 	this.checkMouse = function(x, y) {
 		return this.slides[this.activeSlide].checkMouse(x, y);
-	}
+	};
 
 	this.onMouseHover = function(x, y) {
 		if(this.skip.checkMouse(x, y)) {
@@ -263,7 +263,7 @@ function Animation(continuable) {
 		} else {
 			this.slides[this.activeSlide].onMouseHover(x, y);
 		}
-	}
+	};
 
 	this.onMouseClick = function(x, y) {
 		if(this.skip.checkMouse(x, y)) {
@@ -273,13 +273,13 @@ function Animation(continuable) {
 		} else {
 			this.slides[this.activeSlide].onMouseClick(x, y);
 		}
-	}
+	};
 
 	this.onMouseOut = function() {
 		this.skip.onMouseOut();
 		this.cont.onMouseOut();
 		this.slides[this.activeSlide].onMouseOut();
-	}
+	};
 
 	function changeSlides() {
 		that.activeSlide++;
@@ -294,10 +294,10 @@ function Animation(continuable) {
 	this.start = function() {
 		this.activeSlide = 0;
 
-		if(this.slides.length != 0) {
+		if(this.slides.length !== 0) {
 			this.interval = setTimeout(changeSlides, this.slides[this.activeSlide].duration);
 		}
-	}
+	};
 }
 
 function Timer(startTime, scale) {
@@ -351,7 +351,7 @@ function Timer(startTime, scale) {
 
 			renderingContext.fillText(this.time.toString(), this.textX, this.textY + this.fontSize);
 		}
-	}
+	};
 
 	this.checkMouse = function(x, y) {
 		var tmpX = x - (this.x + this.radius);
@@ -362,29 +362,29 @@ function Timer(startTime, scale) {
 		} else {
 			return false;
 		}
-	}
+	};
 
 	this.onMouseHover = function(x, y) {
 		this.textX = x + this.fontSize;
 		this.textY = y;
 		this.text = true;
-	}
+	};
 
 	this.onMouseOut = function() {
 		this.text = false;
-	}
+	};
 
 	this.onMouseClick = function(x, y) {
 
-	}
+	};
 
 	this.onSecond = function(callback) {
 		this.onSecondC.push(callback);
-	}
+	};
 
 	this.onTimeout = function(callback) {
 		this.onTimeoutC.push(callback);
-	}
+	};
 
 	this.start = function() {
 		var that = this;
@@ -395,7 +395,7 @@ function Timer(startTime, scale) {
 				that.onSecondC[i](that.time);
 			}
 
-			if(that.time == 0) {
+			if(that.time === 0) {
 				clearInterval(that.interval);
 
 				if(that.selfDisabling) {
@@ -407,15 +407,15 @@ function Timer(startTime, scale) {
 				}
 			}
 		}, 1000);
-	}
+	};
 
 	this.stop = function() {
 		clearInterval(this.interval);
-	}
+	};
 
 	this.getTime = function() {
 		return this.time;
-	}
+	};
 }
 
 function MenuOption(text, action) {
@@ -432,7 +432,7 @@ function Menu(x, y, scale) {
 		scale = 1;
 	}
 
-	this.options = new Array();
+	this.options = [];
 	this.zIndex = 100;
 
 	this.x = x;
@@ -455,19 +455,19 @@ function Menu(x, y, scale) {
 		while(this.options.length > 0) {
 			var opt = this.options.pop();
 
-			if(opt.subMenu != false) {
+			if(opt.subMenu !== false) {
 				opt.subMenu.close();
 			}
 		}
 
 		this.open = false;
 		this.enabled = false;
-	}
+	};
 
 	this.newOption = function(option) {
 		this.options.push(option);
 		this.height += 2*this.border + this.oneElHeight;
-	}
+	};
 
 	this.draw = function(renderingContext) {
 		if(!this.open) {
@@ -508,18 +508,18 @@ function Menu(x, y, scale) {
 							(renderingContext.measureText(this.options[i].text).width / 2),
 					this.y + this.fontSize + this.border + i*this.oneElHeight + 2*i*this.border);
 
-			if(this.options[i].hover && this.options[i].subMenu != false) {
+			if(this.options[i].hover && this.options[i].subMenu !== false) {
 				this.options[i].subMenu.draw(renderingContext);
 			}
 		}
-	}
+	};
 
 	this.center = function(renderingContext) {
 		this.computeDimensions(renderingContext);
 
 		this.x = (canvasWidth / 2) - (this.width / 2);
 		this.y = (canvasHeight / 2) - (this.oneElHeight * this.options.length / 2);
-	}
+	};
 
 	this.computeDimensions = function(renderingContext) {
 		renderingContext.beginPath();
@@ -534,7 +534,7 @@ function Menu(x, y, scale) {
 				this.width += 2*this.border;
 			}
 		}
-	}
+	};
 	
 	this.checkMouse = function(x, y) {
 		if(!this.open) {
@@ -545,14 +545,14 @@ function Menu(x, y, scale) {
 			return true;
 		} else {
 			for(var i = 0; i < this.options.length; i++) {
-				if(this.options[i].subMenu != false && this.options[i].hover) {
+				if(this.options[i].subMenu !== false && this.options[i].hover) {
 					return this.options[i].subMenu.checkMouse(x, y);
 				}
 			}
 			
 			return false;
 		}
-	}
+	};
 
 	this.onMouseHover = function(x, y) {
 		if(this.x <= x && this.y <= y && this.x + this.width >= x && this.y + this.height >= y) {
@@ -562,7 +562,7 @@ function Menu(x, y, scale) {
 				if(yOff >= i*this.oneElHeight + 2*i*this.border && yOff < i*this.oneElHeight + this.oneElHeight + 2*i*this.border + 2*this.border) {
 					this.options[i].hover = true;
 
-					if(this.options[i].subMenu != false && this.options[i].active) {
+					if(this.options[i].subMenu !== false && this.options[i].active) {
 						this.options[i].subMenu.onMouseOut();
 						this.options[i].subMenu.x = this.x + this.width + 2*this.border;
 						this.options[i].subMenu.y = this.y + i*this.oneElHeight + 2*i*this.border;
@@ -571,7 +571,7 @@ function Menu(x, y, scale) {
 				} else {
 					this.options[i].hover = false;
 
-					if(this.options[i].subMenu != false) {
+					if(this.options[i].subMenu !== false) {
 						this.options[i].subMenu.onMouseOut();
 						this.options[i].subMenu.open = false;	// We can't call close here, as it removes all options from the menu
 					}
@@ -580,12 +580,12 @@ function Menu(x, y, scale) {
 			}
 		} else {
 			for(var i = 0; i < this.options.length; i++) {
-				if(this.options[i].hover && this.options[i].subMenu != false) {
+				if(this.options[i].hover && this.options[i].subMenu !== false) {
 					this.options[i].subMenu.onMouseHover(x, y);
 				}
 			}
 		}
-	}
+	};
 
 	this.onMouseClick = function(x, y) {
 		if(this.x <= x && this.y <= y && this.x + this.width >= x && this.y + this.height >= y) {
@@ -597,7 +597,7 @@ function Menu(x, y, scale) {
 			}
 		} else {
 			for(var i = 0; i < this.options.length; i++) {
-				if(this.options[i].hover && this.options[i].subMenu != false) {
+				if(this.options[i].hover && this.options[i].subMenu !== false) {
 					this.options[i].subMenu.onMouseClick(x, y);
 				}
 			}
@@ -606,18 +606,18 @@ function Menu(x, y, scale) {
 		if(this.autoClose) {
 			this.close();
 		}
-	}
+	};
 
 	this.onMouseOut = function() {
 		for(var i = 0; i < this.options.length; i++) {
 			this.options[i].hover = false;
 
-			if(this.options[i].subMenu != false) {
+			if(this.options[i].subMenu !== false) {
 				this.options[i].subMenu.onMouseOut();
 				this.options[i].subMenu.open = false;
 			}
 		}
-	}
+	};
 }
 
 function MessageBox(x, y, titleText, message, scale) {
@@ -627,7 +627,7 @@ function MessageBox(x, y, titleText, message, scale) {
 
 	this.message = message;
 	this.titleText = titleText;
-	this.options = new Array();
+	this.options = [];
 
 	this.open = false;
 	this.enabled = true;
@@ -653,11 +653,11 @@ function MessageBox(x, y, titleText, message, scale) {
 	this.close = function() {
 		this.open = false;
 		this.enabled = false;
-	}
+	};
 
 	this.newOption = function(option) {
 		this.options.push(option);
-	}
+	};
 
 	this.draw = function(renderingContext) {
 		if(!this.open) {
@@ -670,7 +670,7 @@ function MessageBox(x, y, titleText, message, scale) {
 		renderingContext.strokeStyle = "black";
 		renderingContext.font = this.fontSize + "px Dnk";
 
-		lines = this.message.split("\n");
+		var lines = this.message.split("\n");
 
 		renderingContext.fillStyle = "#0000FF";
 
@@ -709,7 +709,7 @@ function MessageBox(x, y, titleText, message, scale) {
 				// Add the text to the main box
 		}
 
-		if(this.options.length != 0) {
+		if(this.options.length !== 0) {
 			renderingContext.fillStyle = "#0000FF";
 
 			renderingContext.strokeRect(this.x, this.y + this.height -
@@ -754,13 +754,13 @@ function MessageBox(x, y, titleText, message, scale) {
 				widthSoFar += this.options[i].width;
 			}
 		}
-	}
+	};
 
 	this.center = function(renderingContext) {
 		this.computeDimensions(renderingContext);
 		this.x = (canvasWidth / 2) - (this.width / 2);
 		this.y = (canvasHeight / 2) - (this.height / 2);
-	}
+	};
 
 	this.computeDimensions = function(renderingContext) {
 		this.width = 0;
@@ -770,7 +770,7 @@ function MessageBox(x, y, titleText, message, scale) {
 		renderingContext.strokeStyle = "black";
 		renderingContext.font = this.fontSize + "px Dnk";
 
-		lines = this.message.split("\n");
+		var lines = this.message.split("\n");
 
 		// Width calculations //////////////////////////////////////////////////////////////////////////
 		for(var i = 0; i < lines.length; i++) {
@@ -779,13 +779,13 @@ function MessageBox(x, y, titleText, message, scale) {
 			}
 		}
 
-		if(renderingContext.measureText(this.titleText).width + (this.closable ? this.lineHeight : 0)
-				+ 4*this.border > this.width) {
+		if(renderingContext.measureText(this.titleText).width + (this.closable ? this.lineHeight : 0) +
+				4*this.border > this.width) {
 			this.width = renderingContext.measureText(this.titleText).width +
 				(this.closable ? this.lineHeight : 0) + 4*this.border;
 		}
 
-		if(this.options.length != 0) {
+		if(this.options.length !== 0) {
 			var cur = 4*this.border;
 
 			for(var i = 0; i < this.options.length; i++) {
@@ -803,7 +803,7 @@ function MessageBox(x, y, titleText, message, scale) {
 		this.height = 2*this.border + this.lineHeight;
 		this.height += this.border + lines.length * this.lineHeight;
 		this.height += 5*this.border + this.lineHeight;
-	}
+	};
 
 	this.checkMouse = function(x, y) {
 		if(!this.open) {
@@ -815,7 +815,7 @@ function MessageBox(x, y, titleText, message, scale) {
 		} else {
 			return false;
 		}
-	}
+	};
 
 	this.onMouseHover = function(x, y) {
 		for(var i = 0; i < this.options.length; i++) {
@@ -826,7 +826,7 @@ function MessageBox(x, y, titleText, message, scale) {
 				this.options[i].hover = false;
 			}
 		}
-	}
+	};
 
 	this.onMouseClick = function(x, y) {
 		if(this.y + this.border <= y && this.y + this.lineHeight + this.border >= y &&
@@ -841,17 +841,17 @@ function MessageBox(x, y, titleText, message, scale) {
 				this.options[i].action();
 			}
 		}
-	}
+	};
 
 	this.onMouseOut = function(x, y) {
 		for(var i = 0; i < this.options.length; i++) {
 			this.options[i].hover = false;
 		}
-	}
+	};
 }
 
 function SpriteList() {
-	this.list = new Array();	// Store the sprites themselves
+	this.list = [];
 
 	this.currentHover = false;
 	this.enabled = true;
@@ -861,52 +861,48 @@ function SpriteList() {
 	this.activeMenu = false;
 
 	// Methods
-	this.appendSprite = appendSprite;
-	function appendSprite(sprite) {
+	this.appendSprite = function(sprite) {
 		this.list.push(sprite);
 
 		this.list.sort(function(a, b) {	// Ensure that we're sorted by the zIndex of the sprites
 			return a.zIndex - b.zIndex;
 		});
-	}
+	};
 
-	this.draw = draw;
-	function draw(renderingContext) {
+	this.draw = function(renderingContext) {
 		for(var i = 0; i < this.list.length; i++) {
-			if(this.list[i].enabled == false) {
+			if(this.list[i].enabled === false) {
 				this.list.splice(i, 1);
 			} else {
 				this.list[i].draw(renderingContext);
 			}
 		}
 
-		if(this.activeMenu != false) {
+		if(this.activeMenu !== false) {
 			this.activeMenu.draw(renderingContext);
 		}
-	}
+	};
 
-	this.checkMouse = checkMouse;
-	function checkMouse(x, y) {
-		if(this.activeMenu != false && this.activeMenu.checkMouse(x, y) != false) {
+	this.checkMouse = function(x, y) {
+		if(this.activeMenu !== false && this.activeMenu.checkMouse(x, y) !== false) {
 			return this.activeMenu;
 		}
 
 		for(var i = this.list.length - 1; i >= 0; i--) {
 			// Traverse the list backwards, because zIndex
-			if(this.list[i].enabled && this.list[i].checkMouse(x, y) != false) {
+			if(this.list[i].enabled && this.list[i].checkMouse(x, y) !== false) {
 				return this.list[i];
 			}
 		}
 		
 		return false;
-	}
+	};
 
-	this.onMouseHover = onMouseHover;
-	function onMouseHover(x, y) {
-		if(this.currentHover == false || this.currentHover.enabled == false) {
+	this.onMouseHover = function(x, y) {
+		if(this.currentHover === false || this.currentHover.enabled === false) {
 			this.currentHover = this.checkMouse(x, y);
 
-			if(this.currentHover == false) {
+			if(this.currentHover === false) {
 				return;	// Give up and go home
 			}
 		} else {
@@ -914,28 +910,26 @@ function SpriteList() {
 				this.currentHover.onMouseOut();
 				this.currentHover = this.checkMouse(x, y);
 
-				if(this.currentHover == false) {
+				if(this.currentHover === false) {
 					return;	// Give up and go home
 				}
 			}
 		}
 
 		this.currentHover.onMouseHover(x, y);
-	}
+	};
 
-	this.onMouseOut = onMouseOut;
-	function onMouseOut() {
-		if(this.currentHover != false) {
+	this.onMouseOut = function() {
+		if(this.currentHover !== false) {
 			this.currentHover.onMouseOut();
 
 			this.currentHover = false;
 		}
-	}
+	};
 
-	this.onMouseClick = onMouseClick;
-	function onMouseClick(x, y) {
-		if(this.currentHover != false) {
-			if(this.activeMenu != false && this.activeMenu.open && this.currentHover != this.activeMenu) {
+	this.onMouseClick = function(x, y) {
+		if(this.currentHover !== false) {
+			if(this.activeMenu !== false && this.activeMenu.open && this.currentHover != this.activeMenu) {
 				if(this.activeMenu.clickOff) {
 					this.activeMenu.close();
 					this.activeMenu = false;
@@ -947,11 +941,11 @@ function SpriteList() {
 					this.onMouseHover(x, y);
 				}
 			}
-		} else if(this.activeMenu != false && this.activeMenu.open) {
+		} else if(this.activeMenu !== false && this.activeMenu.open) {
 			this.activeMenu.close();
 			this.activeMenu = false;
 		}
-	}
+	};
 }
 
 function Patient(x, y) {
@@ -1045,11 +1039,11 @@ function Patient(x, y) {
 		this.sprite.draw(renderingContext);
 		this.timer.draw(renderingContext);
 		
-	}
+	};
 
 	this.checkMouse = function(x, y) {
 		return this.sprite.checkMouse(x, y) || this.timer.checkMouse(x, y);
-	}
+	};
 
 	this.onMouseHover = function(x, y) {
 		if(this.sprite.checkMouse(x, y)) {
@@ -1057,7 +1051,7 @@ function Patient(x, y) {
 		} else if(this.timer.checkMouse(x, y)) {
 			this.timer.onMouseHover(x, y);
 		}
-	}
+	};
 
 	this.onMouseClick = function(x, y) {
 		if(this.sprite.checkMouse(x, y)) {
@@ -1065,12 +1059,12 @@ function Patient(x, y) {
 		} else if(this.timer.checkMouse(x, y)) {
 			this.timer.onMouseClick(x, y);
 		}
-	}
+	};
 
 	this.onMouseOut = function() {
 		this.sprite.onMouseOut();
 		this.timer.onMouseOut();
-	}
+	};
 }
 
 function Ward() {
@@ -1108,7 +1102,7 @@ function Ward() {
 		this.backgrounds[this.activeBackground].draw(renderingContext);
 
 		for(var i = 0; i < this.patients.length; i++) {
-			if(this.patients[i] != false && this.patients[i].enabled) {
+			if(this.patients[i] !== false && this.patients[i].enabled) {
 				this.patients[i].draw(renderingContext);
 			} else if(this.patients[i]) {
 				this.patients[i] = false;
@@ -1117,11 +1111,11 @@ function Ward() {
 				this.schedulePatient(i);
 			}
 		}
-	}
+	};
 
 	this.checkMouse = function(x, y) {
 		return this.backgrounds[this.activeBackground].checkMouse(x, y);
-	}
+	};
 
 	this.onMouseHover = function(x, y) {
 		for(var i = 0; i < this.patients.length; i++) {
@@ -1138,7 +1132,7 @@ function Ward() {
 		if(this.backgrounds[this.activeBackground].checkMouse(x, y)) {
 			this.backgrounds[this.activeBackground].onMouseHover(x, y);
 		}
-	}
+	};
 
 	this.onMouseClick = function(x, y) {
 		for(var i = 0; i < this.patients.length; i++) {
@@ -1151,7 +1145,7 @@ function Ward() {
 		if(this.backgrounds[this.activeBackground].checkMouse(x, y)) {
 			this.backgrounds[this.activeBackground].onMouseClick(x, y);
 		}
-	}
+	};
 	
 	this.onMouseOut = function() {
 		for(var i = 0; i < this.patients.length; i++) {
@@ -1160,14 +1154,14 @@ function Ward() {
 		}
 
 		this.backgrounds[this.activeBackground].onMouseOut();
-	}
+	};
 
 	var that = this;
 	this.schedulePatient = function(n) {
 		setTimeout(function() {
 			that.createPatient(n);
 		}, Math.floor(Math.random() * spawnRate) * 1000);
-	}
+	};
 
 	this.createPatient = function(n) {
 		var p;
@@ -1185,7 +1179,7 @@ function Ward() {
 		}
 
 		this.patients[n] = p;
-	}
+	};
 }
 
 function runGame() {
@@ -1195,20 +1189,18 @@ function runGame() {
 	canvasWidth = canvas.width;
 	canvasHeight = canvas.height;
 
-	var soundSupport = checkSoundSupport();
-
 	var backgroundMusic = new Music("music");
 
-	mainList = new SpriteList();
+	var mainList = new SpriteList();
 
-	mainMenu = new SpriteList();
-	diffMenu = new SpriteList();
-	gamePlay = new SpriteList();
-	optsMenu = new SpriteList();
-	credits = new SpriteList();
-	highScore = new SpriteList();
-	startScene = new SpriteList();
-	gameOver = new SpriteList();
+	var mainMenu = new SpriteList();
+	var diffMenu = new SpriteList();
+	var gamePlay = new SpriteList();
+	var optsMenu = new SpriteList();
+	var credits = new SpriteList();
+	var highScore = new SpriteList();
+	var startScene = new SpriteList();
+	var gameOver = new SpriteList();
 
 // Main menu //////////////////////////////////////////////////////////////////
 	mainMenu.enabled = true;
@@ -1327,11 +1319,11 @@ function runGame() {
 // Difficulty menu ////////////////////////////////////////////////////////////
 	diffMenu.enabled = false;
 	
-	diffBackground = new Sprite("background.jpg", function(x, y) { });
+	var diffBackground = new Sprite("background.jpg", function(x, y) { });
 	diffBackground.zIndex = -5;
 	diffMenu.appendSprite(diffBackground);
 	
-	dMenu = new Menu(0, 0, 1.5);
+	var dMenu = new Menu(0, 0, 1.5);
 	dMenu.autoClose = false;
 	dMenu.open = true;
 	
@@ -1390,11 +1382,11 @@ function runGame() {
 // Options menu ///////////////////////////////////////////////////////////////
 	optsMenu.enabled = false;
 
-	optsBackground = new Sprite("background.jpg", function(x, y) { });
+	var optsBackground = new Sprite("background.jpg", function(x, y) { });
 	optsBackground.zIndex = -1;
 	optsMenu.appendSprite(optsBackground);
 
-	oMenu = new Menu(0, 0, 1.5);
+	var oMenu = new Menu(0, 0, 1.5);
 	oMenu.autoClose = false;
 	oMenu.open = true;
 
@@ -1424,7 +1416,7 @@ function runGame() {
 	oMenuToggleMusic.toggle = true;
 	oMenu.newOption(oMenuToggleMusic);
 
-	oMenuBack = new MenuOption("Back to main menu", function() {
+	var oMenuBack = new MenuOption("Back to main menu", function() {
 		optsMenu.enabled = false;
 		mainMenu.enabled = true;
 
@@ -1438,14 +1430,14 @@ function runGame() {
 // Credits ////////////////////////////////////////////////////////////////////
 	credits.enabled = false;
 
-	cBackground = new Sprite("background.jpg", function(x, y) { });
+	var cBackground = new Sprite("background.jpg", function(x, y) { });
 	cBackground.zIndex = -1;
 	credits.appendSprite(cBackground);
 
-	cBox = new MessageBox(0, 0, "Credits",
+	var cBox = new MessageBox(0, 0, "Credits",
 		"Programmers\nConnor Wood\nCameron Kyle-Davidson\n\nArtwork\nLydia Pauly\n\nGame Design\nBen Williams");
 
-	cBoxBack = new MenuOption("Back", function() {
+	var cBoxBack = new MenuOption("Back", function() {
 		credits.enabled = false;
 		mainMenu.enabled = true;
 
@@ -1461,17 +1453,17 @@ function runGame() {
 // High Score /////////////////////////////////////////////////////////////////
 	highScore.enabled = false;
 
-	hBackground = new Sprite("background.jpg", function(x, y) { });
+	var hBackground = new Sprite("background.jpg", function(x, y) { });
 	hBackground.zIndex = -1;
 	highScore.appendSprite(hBackground);
 
-	hScore = new MessageBox(0, 0, "High Score", currentHighScore.get().toString());
+	var hScore = new MessageBox(0, 0, "High Score", currentHighScore.get().toString());
 
 	currentHighScore.onChange(function(value) {
 		hScore.message = value.toString();
 	});
 
-	hScoreBack = new MenuOption("Back", function() {
+	var hScoreBack = new MenuOption("Back", function() {
 		highScore.enabled = false;
 		mainMenu.enabled = true;
 
@@ -1488,15 +1480,15 @@ function runGame() {
 	gameOver.enabled = false;
 
 	// TODO: This will need writing properly, once the animation images come through
-	goBackground = new Sprite("background.jpg", function(x, y) { });
+	var goBackground = new Sprite("background.jpg", function(x, y) { });
 	goBackground.zIndex = -1;
 	gameOver.appendSprite(goBackground);
 
-	gameOverBox = new MessageBox(0, 0, "Game Over", "Oh dear, you are dead.");
+	var gameOverBox = new MessageBox(0, 0, "Game Over", "Oh dear, you are dead.");
 	gameOverBox.closable = false;
 	gameOverBox.open = true;
 
-	gameOverButton = new MenuOption("Back to Main Menu", function() {
+	var gameOverButton = new MenuOption("Back to Main Menu", function() {
 		gameOver.enabled = false;
 		mainMenu.enabled = true;
 
@@ -1517,7 +1509,7 @@ function runGame() {
 
 // Other stuff ////////////////////////////////////////////////////////////////
 	lives.onChange(function(value) {
-		if(value == 0) {
+		if(value === 0) {
 			gamePlay.enabled = false;
 			gameOver.enabled = true;
 
