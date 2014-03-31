@@ -3,7 +3,7 @@ function Reactive(initial) {
 	this.callbacks = [];
 
 	this.set = function(value) {
-		if(value != this.value) {
+		if(value !== this.value) {
 			this.value = value;
 
 			for(var i = 0; i < this.callbacks.length; i++) {
@@ -129,29 +129,23 @@ function EventSound(file) {
 
 function Sprite(image, onMouseClick) {
 	var that = this;
-	this.x = 0;				// Store the x and y coordinates
-	this.y = 0;
-	this.zIndex = 0;		// This is used for image sequencing
 
-	this.width = 0;
-	this.height = 0;
+	this.x = 0;
+	this.y = 0;
+	this.zIndex = 0;
+
 	this.loaded = false;
+	this.enabled = true;
 
 	this.image = new Image();
 	this.image.onload = function() {
-		that.width = this.width;
-		that.height = this.height;
-
 		that.loaded = true;
 	}
 
 	this.image.src = image;	// Save the image itself
 
-	this.enabled = true;
-
 	// Methods
-	this.draw = draw;
-	function draw(renderingContext) {
+	this.draw = function(renderingContext) {
 		if(!this.loaded) {
 			return;
 		}
@@ -159,24 +153,21 @@ function Sprite(image, onMouseClick) {
 		renderingContext.drawImage(this.image, this.x, this.y);
 	}
 	
-	this.checkMouse = checkMouse;
-	function checkMouse(x, y) {
-		if(this.x <= x && this.y <= y && this.x + this.width >= x && this.y + this.height >= y) {
+	this.checkMouse = function(x, y) {
+		if(this.x <= x && this.y <= y && this.x + this.image.width >= x && this.y + this.image.height >= y) {
 			return true;
 		} else {
 			return false;
 		}
 	}
 	
-	this.onMouseHover = onMouseHover;
-	function onMouseHover(x, y) {
+	this.onMouseHover = function(x, y) {
 
 	}
 
 	this.onMouseClick = onMouseClick;
 
-	this.onMouseOut = onMouseOut;
-	function onMouseOut() {
+	this.onMouseOut = function() {
 
 	}
 }
@@ -245,17 +236,18 @@ function Animation(continuable) {
 
 	this.draw = function(renderingContext) {
 		if(!this.completed) {
-			this.skip.draw(renderingContext);
-				// This will be drawn over; this is to get the width
+			this.skip.computeDimensions(renderingContext);
+			this.cont.computeDimensions(renderingContext);
+
 			this.slides[this.activeSlide].draw(renderingContext);
 
 			this.cont.x = 0;
-			this.cont.y = canvasHeight - this.cont.height;
+			this.cont.y = this.slides[this.activeSlide].image.height - this.cont.height;
 
 			this.cont.draw(renderingContext);
 
-			this.skip.x = canvasWidth - this.skip.width;
-			this.skip.y = canvasHeight - this.skip.height;
+			this.skip.x = this.slides[this.activeSlide].image.width - this.skip.width;
+			this.skip.y = this.slides[this.activeSlide].image.height - this.skip.height;
 
 			this.skip.draw(renderingContext);
 		}
@@ -481,8 +473,7 @@ function Menu(x, y, scale) {
 	this.autoClose = true;
 
 	// Methods
-	this.close = close;
-	function close() {
+	this.close = function() {
 		while(this.options.length > 0) {
 			var opt = this.options.pop();
 
@@ -495,14 +486,12 @@ function Menu(x, y, scale) {
 		this.enabled = false;
 	}
 
-	this.newOption = newOption;
-	function newOption(option) {
+	this.newOption = function(option) {
 		this.options.push(option);
 		this.height += 2*this.border + this.oneElHeight;
 	}
 
-	this.draw = draw;
-	function draw(renderingContext) {
+	this.draw = function(renderingContext) {
 		if(!this.open) {
 			return;
 		}
@@ -547,8 +536,14 @@ function Menu(x, y, scale) {
 		}
 	}
 
-	this.center = center;
-	function center(renderingContext) {
+	this.center = function(renderingContext) {
+		this.computeDimensions(renderingContext);
+
+		this.x = (canvasWidth / 2) - (this.width / 2);
+		this.y = (canvasHeight / 2) - (this.oneElHeight * this.options.length / 2);
+	}
+
+	this.computeDimensions = function(renderingContext) {
 		renderingContext.beginPath();
 		renderingContext.strokeStyle = "black";
 		renderingContext.font = this.fontSize + "px Dnk";
@@ -561,13 +556,9 @@ function Menu(x, y, scale) {
 				this.width += 2*this.border;
 			}
 		}
-
-		this.x = (canvasWidth / 2) - (this.width / 2);
-		this.y = (canvasHeight / 2) - (this.oneElHeight * this.options.length / 2);
 	}
 	
-	this.checkMouse = checkMouse;
-	function checkMouse(x, y) {
+	this.checkMouse = function(x, y) {
 		if(!this.open) {
 			return false;
 		}
@@ -585,8 +576,7 @@ function Menu(x, y, scale) {
 		}
 	}
 
-	this.onMouseHover = onMouseHover;
-	function onMouseHover(x, y) {
+	this.onMouseHover = function(x, y) {
 		if(this.x <= x && this.y <= y && this.x + this.width >= x && this.y + this.height >= y) {
 			var yOff = y - this.y;
 
@@ -619,8 +609,7 @@ function Menu(x, y, scale) {
 		}
 	}
 
-	this.onMouseClick = onMouseClick;
-	function onMouseClick(x, y) {
+	this.onMouseClick = function(x, y) {
 		if(this.x <= x && this.y <= y && this.x + this.width >= x && this.y + this.height >= y) {
 			for(var i = 0; i < this.options.length; i++) {
 				if(this.options[i].hover && this.options[i].active) {
@@ -641,8 +630,7 @@ function Menu(x, y, scale) {
 		}
 	}
 
-	this.onMouseOut = onMouseOut;
-	function onMouseOut() {
+	this.onMouseOut = function() {
 		for(var i = 0; i < this.options.length; i++) {
 			this.options[i].hover = false;
 
@@ -1070,8 +1058,6 @@ function Patient(x, y) {
 	this.timer.start();
 
 	this.draw = function(renderingContext) {
-		
-		
 		this.timer.x = this.x + 52;
 		this.timer.y = this.y;
 
@@ -1281,7 +1267,7 @@ function runGame() {
 
 		mainList.appendSprite(highScore);
 	});
-	
+
 	mmMenu.newOption(mmMenuOptPlay);
 	mmMenu.newOption(mmMenuOptOptions);
 	mmMenu.newOption(mmMenuOptCredits);
