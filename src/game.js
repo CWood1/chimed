@@ -1,8 +1,3 @@
-// TODO: Cam, I've saved the canvas width and height in the globals, canvasWidth and canvasHeight. Can you go through and,
-// for all the center() functions, and anywhere else where canvas is passed for the sole purpose of getting its dimensions,
-// and for that matter if I've missed anywhere where I still reference an image for the canvas dimensions, can you correct
-// this? Thanks
-
 function Reactive(initial) {
 	this.value = initial;
 	this.callbacks = [];
@@ -78,8 +73,19 @@ function checkSoundSupport() {
 	}
 }
 
+function Sound(file) {
+	if(checkSoundSupport() == 1) {
+		file += ".ogg";
+	} else if(checkSoundSupport() == 2) {
+		file += ".mp3";
+	}
+
+	return new Audio(file);
+		// Hahaha audiophile xD
+}
+
 function Music(file) {
-	this.audio = new Audio(file);
+	this.audio = new Sound(file);
 	var that = this;
 		// Used for the callback
 
@@ -118,9 +124,7 @@ function Music(file) {
 
 function EventSound(file) {
 	if(sound.get()) {
-		audio = new Audio(file);
-			// Hahaha audiophile xD
-	
+		audio = new Sound(file);	
 		audio.play();
 
 		sound.onChange(function(value) {
@@ -553,7 +557,7 @@ function Menu(x, y, scale) {
 	}
 
 	this.center = center;
-	function center(canvas, renderingContext) {
+	function center(renderingContext) {
 		renderingContext.beginPath();
 		renderingContext.strokeStyle = "black";
 		renderingContext.font = this.fontSize + "px Dnk";
@@ -567,8 +571,8 @@ function Menu(x, y, scale) {
 			}
 		}
 
-		this.x = (canvas.width / 2) - (this.width / 2);
-		this.y = (canvas.height / 2) - (this.oneElHeight * this.options.length / 2);
+		this.x = (canvasWidth / 2) - (this.width / 2);
+		this.y = (canvasHeight / 2) - (this.oneElHeight * this.options.length / 2);
 	}
 	
 	this.checkMouse = checkMouse;
@@ -1213,7 +1217,6 @@ function Ward() {
 	this.createPatient = function(n) {
 		var p;
 
-		// TODO: get these positioned correctly
 		switch(n) {
 			case 0:
 				p = new Patient(35, 125);
@@ -1238,17 +1241,8 @@ function runGame() {
 	canvasHeight = canvas.height;
 
 	var soundSupport = checkSoundSupport();
-	var musicFile = "";
 
-	if(soundSupport == 1) {
-		// Load in Vorbis files
-		musicFile = "music.ogg";
-	} else if(soundSupport == 2) {
-		// Load in MP3 files
-		musicFile = "music.mp3";
-	}
-
-	var backgroundMusic = new Music(musicFile);
+	var backgroundMusic = new Music("music");
 
 	mainList = new SpriteList();
 
@@ -1304,7 +1298,7 @@ function runGame() {
 
 	mmMenu.zIndex = 100;
 	mmMenu.open = true;
-	mmMenu.center(canvas, renderingContext);
+	mmMenu.center(renderingContext);
 	mainMenu.appendSprite(mmMenu);
 
 	mainList.appendSprite(mainMenu);
@@ -1326,7 +1320,6 @@ function runGame() {
 
 	});
 
-	// TODO: Check these timings are correct with Lydia
 	intro.addSlide(slide1, 1500);
 	intro.addSlide(slide2, 1500);
 	intro.addSlide(slide3, 1500);
@@ -1343,7 +1336,6 @@ function runGame() {
 		mainList.appendSprite(gamePlay);
 	});
 
-	// TODO: Add callback to start the game itself (set up initial patients, start spawning of patients, etc.
 	startScene.appendSprite(intro);
 
 // Gameplay ///////////////////////////////////////////////////////////////////
@@ -1436,7 +1428,7 @@ function runGame() {
 	dMenu.newOption(dMenuHard);
 	dMenu.newOption(dMenuRtn);
 	
-	dMenu.center(canvas, renderingContext);
+	dMenu.center(renderingContext);
 	
 	diffMenu.appendSprite(dMenu);
 
@@ -1484,7 +1476,7 @@ function runGame() {
 		mainList.appendSprite(mainMenu);
 	});
 	oMenu.newOption(oMenuBack);
-	oMenu.center(canvas, renderingContext);
+	oMenu.center(renderingContext);
 
 	optsMenu.appendSprite(oMenu);
 
@@ -1577,22 +1569,6 @@ function runGame() {
 			mainList.appendSprite(gameOver);
 			mainList.draw(renderingContext);
 				// Force a redraw
-		}
-	});
-
-	document.addEventListener('keydown', function(event) {
-		if(event.keyCode == 37) {
-			// LEFT
-			list.draw(renderingContext);
-		} else if(event.keyCode == 39) {
-			// RIGHT
-			list.draw(renderingContext);
-		} else if(event.keyCode == 38) {
-			// UP
-			list.draw(renderingContext);
-		} else if(event.keyCode == 40) {
-			// DOWN
-			list.draw(renderingContext);
 		}
 	});
 
