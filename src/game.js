@@ -686,6 +686,8 @@ function MessageBox(x, y, titleText, message, scale) {
 	this.lineHeight = 20 * this.scale;
 	this.border = 1;
 
+	this.buttonWidth = 0;
+
 	// Methods
 	this.close = function() {
 		this.open = false;
@@ -701,7 +703,7 @@ function MessageBox(x, y, titleText, message, scale) {
 			return;
 		}
 
-		this.width = 0;
+		this.computeDimensions(renderingContext);
 
 		renderingContext.beginPath();
 		renderingContext.strokeStyle = "black";
@@ -709,92 +711,68 @@ function MessageBox(x, y, titleText, message, scale) {
 
 		lines = this.message.split("\n");
 
-		this.height = (lines.length + 1)*this.lineHeight + 3*this.border;
-			// Don't subtract 1, as we'll need the title text
-			// One border for the top, one for the bottom, and one between the title and the message
-
-		for(var i = 0; i < lines.length; i++) {
-			if(renderingContext.measureText(lines[i]).width + 2*this.border > this.width) {
-				this.width = renderingContext.measureText(lines[i]).width + 2*this.border;
-			}
-		}
-
-		if(renderingContext.measureText(this.titleText).width +
-				(this.closable ? this.lineHeight : 0) + 2*this.border > this.width) {
-			this.width = renderingContext.measureText(this.titleText).width +
-				(this.closable ? this.lineHeight : 0) +	2*this.border;
-		}
-
-		var buttonWidth = 0;
-		if(this.options.length != 0) {
-			var cur = 2*this.border;
-
-			for(var i = 0; i < this.options.length; i++) {
-				cur += 2*this.border + renderingContext.measureText(this.options[i].text).width;
-			}
-
-			if(cur > this.width) {
-				this.width = cur;
-			}
-
-			this.height += this.lineHeight + 6*this.border;
-
-			buttonWidth = cur - 2*this.border + 2;
-		}
-
 		renderingContext.fillStyle = "#0000FF";
 
-		renderingContext.fillRect(this.x + this.border, this.y + this.border, this.width, this.lineHeight);
-		renderingContext.strokeRect(this.x, this.y,
-				this.width + 2*this.border, this.lineHeight + 2*this.border);
+		renderingContext.strokeRect(this.x, this.y, this.width, 2*this.border + this.lineHeight);
+		renderingContext.fillRect(this.x + this.border, this.y + this.border,
+				this.width - 2*this.border, this.lineHeight);
+			// Create the title box
 		renderingContext.fillStyle = "white";
-
-		renderingContext.fillText(this.titleText, 
+		renderingContext.fillText(this.titleText,
 				this.x + ((this.width - (this.closable ? this.lineHeight : 0)) / 2) -
 					(renderingContext.measureText(this.titleText).width / 2),
-				this.y + this.fontSize + this.border);
+				this.y + this.border + this.fontSize);
+			// Add the text to the title box
 
 		if(this.closable) {
 			renderingContext.fillStyle = "#FF0000";
-
-			renderingContext.fillRect(this.x + this.border + this.width - this.lineHeight, this.y + this.border,
-					this.lineHeight, this.lineHeight);
+			
+			renderingContext.fillRect(this.x + this.width - (this.lineHeight + this.border),
+					this.y + this.border, this.lineHeight, this.lineHeight);
+				// Create the close button, if it's needed
 		}
 
 		renderingContext.fillStyle = "#0000FF";
 
+		renderingContext.strokeRect(this.x, this.y + this.border + this.lineHeight,
+				this.width, lines.length*this.lineHeight + 2*this.border);
 		renderingContext.fillRect(this.x + this.border, this.y + 2*this.border + this.lineHeight,
-				this.width, this.height - (this.lineHeight + 
-					(this.options.length != 0 ? this.lineHeight + this.border : 0)));
-		renderingContext.strokeRect(this.x, this.y + this.lineHeight + this.border,
-				this.width + 2*this.border, this.height + 2*this.border - (this.lineHeight + 
-					(this.options.length != 0 ? this.lineHeight + this.border : 0)));
+				this.width - 2*this.border, lines.length*this.lineHeight);
+			// Create the main box
 
 		renderingContext.fillStyle = "white";
 		for(var i = 0; i < lines.length; i++) {
 			renderingContext.fillText(lines[i], this.x + (this.width / 2) -
 						(renderingContext.measureText(lines[i]).width / 2),
 					this.y + this.fontSize + 2*this.border + this.lineHeight*(i+1));
+				// Add the text to the main box
 		}
 
 		if(this.options.length != 0) {
 			renderingContext.fillStyle = "#0000FF";
 
-			renderingContext.fillRect(this.x + this.border,
-					this.y + 3*this.border + this.height - (this.lineHeight + 1),
-					this.width, this.lineHeight + 4*this.border);
-			renderingContext.strokeRect(this.x, this.y + 2*this.border + this.height - (this.lineHeight + 1),
-					this.width + 2*this.border, this.lineHeight + 6*this.border);
+			renderingContext.strokeRect(this.x, this.y + this.height -
+						(6*this.border + this.lineHeight),
+					this.width, 6*this.border + this.lineHeight);
+			renderingContext.fillRect(this.x + this.border, this.y + this.height -
+						(5*this.border + this.lineHeight),
+					this.width - 2*this.border, 4*this.border + this.lineHeight);
+				// Create the button box
 
 			var widthSoFar = 0;
 			for(var i = 0; i < this.options.length; i++) {
 				var itemWidth = renderingContext.measureText(this.options[i].text).width;
 
-				this.options[i].x = this.x + (this.width / 2) + widthSoFar + 2*(i+1)*this.border
-						- (buttonWidth / 2);
-				this.options[i].y = this.y + 3*this.border + this.height - this.lineHeight;
-				this.options[i].width = itemWidth + 2*this.border;
+				this.options[i].x = this.x + widthSoFar + (this.width / 2) - (this.buttonWidth / 2);
+					// Center the buttons
+				this.options[i].y = this.y + this.height - (4*this.border + this.lineHeight);
+					// One border below the top of the box
+				this.options[i].width = 4*this.border + itemWidth;
 				this.options[i].height = this.lineHeight + 2*this.border;
+
+				renderingContext.strokeRect(this.options[i].x, this.options[i].y,
+						this.options[i].width, this.options[i].height);
+					// Draw the button
 
 				if(this.options[i].hover) {
 					renderingContext.fillStyle = "#0000AA";
@@ -803,72 +781,67 @@ function MessageBox(x, y, titleText, message, scale) {
 							this.options[i].y + this.border,
 							this.options[i].width - 2*this.border,
 							this.options[i].height - 2*this.border);
+						// If applicable, fill in the button
 				}
-
-				renderingContext.strokeRect(this.options[i].x, this.options[i].y,
-						this.options[i].width, this.options[i].height);
 
 				renderingContext.fillStyle = "white";
 				renderingContext.fillText(this.options[i].text,
 						this.options[i].x + this.border,
 						this.options[i].y + this.fontSize);
-
+					// Write the text
 
 				widthSoFar += this.options[i].width;
 			}
 		}
 	}
 
-	this.center = function(canvas, renderingContext) {
+	this.center = function(renderingContext) {
+		this.computeDimensions(renderingContext);
+		this.x = (canvasWidth / 2) - (this.width / 2);
+		this.y = (canvasHeight / 2) - (this.height / 2);
+	}
+
+	this.computeDimensions = function(renderingContext) {
+		this.width = 0;
+		this.height = 0;
+
 		renderingContext.beginPath();
 		renderingContext.strokeStyle = "black";
 		renderingContext.font = this.fontSize + "px Dnk";
 
-		this.height = (this.message.split("\n").length + 1)*this.lineHeight + 3*this.border;
-			// Don't subtract 1, as we'll need the title text
-			// One border for the top, one for the bottom, and one between the title and the message
-
 		lines = this.message.split("\n");
 
+		// Width calculations //////////////////////////////////////////////////////////////////////////
 		for(var i = 0; i < lines.length; i++) {
-			if(renderingContext.measureText(lines[i]).width + 2*this.border > this.width) {
-				this.width = renderingContext.measureText(lines[i]).width + 2*this.border;
+			if(renderingContext.measureText(lines[i]).width + 4*this.border > this.width) {
+				this.width = renderingContext.measureText(lines[i]).width + 4*this.border;
 			}
 		}
 
 		if(renderingContext.measureText(this.titleText).width + (this.closable ? this.lineHeight : 0)
-				+ 2*this.border > this.width) {
+				+ 4*this.border > this.width) {
 			this.width = renderingContext.measureText(this.titleText).width +
-				(this.closable ? this.lineHeight : 0) + 2*this.border;
+				(this.closable ? this.lineHeight : 0) + 4*this.border;
 		}
 
 		if(this.options.length != 0) {
-			var cur = 2*this.border;
+			var cur = 4*this.border;
 
 			for(var i = 0; i < this.options.length; i++) {
-				cur += 2*this.border + renderingContext.measureText(this.options[i].text).width;
+				cur += 5*this.border + renderingContext.measureText(this.options[i].text).width;
 			}
 
 			if(cur > this.width) {
 				this.width = cur;
 			}
 
-			this.height += this.lineHeight + 6*this.border;
+			this.buttonWidth = cur - 4*this.border;
 		}
 
-		this.x = (canvas.width / 2) - (this.width / 2);
-		this.y = (canvas.height / 2) - (this.height / 2);
-
-		this.width += 2*this.border;
-			// For reasons unbeknownst to me, I set the border to
-			// be this.width + 2*this.border. Why, I don't know.
-			// Must rewrite draw to be more robust. For now, this
-			// should fix it. Also, need another function to 
-			// calculate the dimensions without changing anything
-			// else, to lessen code duplication.
-			//
-			// TODO: Cam, could you have a go at some of this
-			// please?
+		// Height calculations /////////////////////////////////////////////////////////////////////////
+		this.height = 2*this.border + this.lineHeight;
+		this.height += this.border + lines.length * this.lineHeight;
+		this.height += 5*this.border + this.lineHeight;
 	}
 
 	this.checkMouse = function(x, y) {
@@ -1196,7 +1169,7 @@ function Ward() {
 			if(this.patients[i]) {
 				if(this.patients[i].checkMouse(x, y)) {
 					this.patients[i].onMouseHover(x, y);
-					this.background.onMouseOut(x, y);
+					this.backgrounds[this.activeBackground].onMouseOut(x, y);
 				} else {
 					this.patients[i].onMouseOut(x, y);
 				}
@@ -1395,7 +1368,7 @@ function runGame() {
 	});
 
 		// Calculate the width
-	livesBox.center(canvas, renderingContext);
+	livesBox.computeDimensions(renderingContext);
 	livesBox.y = 0;
 	livesBox.x = canvasWidth - livesBox.width;
 
@@ -1535,7 +1508,7 @@ function runGame() {
 
 	cBox.closable = false;
 	cBox.open = true;
-	cBox.center(canvas, renderingContext);
+	cBox.center(renderingContext);
 	credits.appendSprite(cBox);
 
 // High Score /////////////////////////////////////////////////////////////////
@@ -1561,7 +1534,7 @@ function runGame() {
 
 	hScore.closable = false;
 	hScore.open = true;
-	hScore.center(canvas, renderingContext);
+	hScore.center(renderingContext);
 	highScore.appendSprite(hScore);
 
 // Game Over //////////////////////////////////////////////////////////////////
@@ -1592,7 +1565,7 @@ function runGame() {
 
 	gameOverBox.newOption(gameOverButton);
 	
-	gameOverBox.center(canvas, renderingContext);
+	gameOverBox.center(renderingContext);
 	gameOver.appendSprite(gameOverBox);
 
 // Other stuff ////////////////////////////////////////////////////////////////
