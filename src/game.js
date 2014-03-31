@@ -179,14 +179,15 @@ function Animation(continuable) {
 
 	var that = this;
 
-	this.slides = [];
-	this.onCompleteC = [];
-	this.activeSlide = 0;
 	this.enabled = true;
+	this.zIndex = 0;
+
+	this.slides = [];
+	this.activeSlide = 0;
+
+	this.onCompleteC = [];
+
 	this.continuable = continuable;
-
-	this.completed = false;
-
 	this.skip = new Menu(0, 0);
 	this.cont = new Menu(0, 0);
 
@@ -210,8 +211,7 @@ function Animation(continuable) {
 
 	this.complete = function() {
 		clearTimeout(this.interval);
-
-		this.completed = true;
+		this.enabled = false;
 
 		for(var i = 0; i < this.onCompleteC.length; i++) {
 			this.onCompleteC[i]();
@@ -235,37 +235,27 @@ function Animation(continuable) {
 	}
 
 	this.draw = function(renderingContext) {
-		if(!this.completed) {
-			this.skip.computeDimensions(renderingContext);
-			this.cont.computeDimensions(renderingContext);
+		this.skip.computeDimensions(renderingContext);
+		this.cont.computeDimensions(renderingContext);
 
-			this.slides[this.activeSlide].draw(renderingContext);
+		this.slides[this.activeSlide].draw(renderingContext);
 
-			this.cont.x = 0;
-			this.cont.y = this.slides[this.activeSlide].image.height - this.cont.height;
+		this.cont.x = 0;
+		this.cont.y = this.slides[this.activeSlide].image.height - this.cont.height;
 
-			this.cont.draw(renderingContext);
+		this.cont.draw(renderingContext);
 
-			this.skip.x = this.slides[this.activeSlide].image.width - this.skip.width;
-			this.skip.y = this.slides[this.activeSlide].image.height - this.skip.height;
+		this.skip.x = this.slides[this.activeSlide].image.width - this.skip.width;
+		this.skip.y = this.slides[this.activeSlide].image.height - this.skip.height;
 
-			this.skip.draw(renderingContext);
-		}
+		this.skip.draw(renderingContext);
 	}
 
 	this.checkMouse = function(x, y) {
-		if(this.completed) {
-			return false;
-		}
-
 		return this.slides[this.activeSlide].checkMouse(x, y);
 	}
 
 	this.onMouseHover = function(x, y) {
-		if(this.completed) {
-			return;
-		}
-
 		if(this.skip.checkMouse(x, y)) {
 			this.skip.onMouseHover(x, y);
 		} else if(this.continuable && this.cont.checkMouse(x, y)) {
@@ -276,10 +266,6 @@ function Animation(continuable) {
 	}
 
 	this.onMouseClick = function(x, y) {
-		if(this.completed) {
-			return;
-		}
-
 		if(this.skip.checkMouse(x, y)) {
 			this.skip.onMouseClick(x, y);
 		} else if(this.continuable && this.cont.checkMouse(x, y)) {
@@ -290,10 +276,6 @@ function Animation(continuable) {
 	}
 
 	this.onMouseOut = function() {
-		if(this.completed) {
-			return;
-		}
-
 		this.skip.onMouseOut();
 		this.cont.onMouseOut();
 		this.slides[this.activeSlide].onMouseOut();
@@ -303,11 +285,7 @@ function Animation(continuable) {
 		that.activeSlide++;
 
 		if(that.activeSlide >= that.slides.length) {
-			this.completed = true;
-
-			for(var i = 0; i < that.onCompleteC.length; i++) {
-				that.onCompleteC[i]();
-			}
+			that.complete();
 		} else {
 			that.interval = setTimeout(changeSlides, that.slides[that.activeSlide].duration);
 		}
@@ -315,7 +293,7 @@ function Animation(continuable) {
 
 	this.start = function() {
 		this.activeSlide = 0;
-		this.completed = false;
+
 		if(this.slides.length != 0) {
 			this.interval = setTimeout(changeSlides, this.slides[this.activeSlide].duration);
 		}
