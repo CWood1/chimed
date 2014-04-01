@@ -211,7 +211,6 @@ function Animation(continuable) {
 
 	this.complete = function() {
 		clearTimeout(this.interval);
-		this.enabled = false;
 
 		for(var i = 0; i < this.onCompleteC.length; i++) {
 			this.onCompleteC[i]();
@@ -325,10 +324,17 @@ function Timer(startTime, scale) {
 
 	this.draw = function(renderingContext) {
 		renderingContext.strokeStyle = "black";
-		renderingContext.fillStyle = "white";
+
+		if(this.time > 15) {
+			renderingContext.fillStyle = "green";
+		} else if(this.time > 10) {
+			renderingContext.fillStyle = "orange";
+		} else {
+			renderingContext.fillStyle = "red";
+		}
 
 		renderingContext.beginPath();
-		renderingContext.arc(this.x + this.radius, this.y + this.radius, this.radius,
+		renderingContext.arc(this.x, this.y, this.radius,
 				0, Math.PI * 2, false);
 		renderingContext.fill();
 		renderingContext.stroke();
@@ -336,7 +342,7 @@ function Timer(startTime, scale) {
 		var theta = Math.PI * this.time / 30;
 		renderingContext.save();
 
-		renderingContext.translate(this.x + this.radius, this.y + this.radius);
+		renderingContext.translate(this.x, this.y);
 		renderingContext.rotate(theta);
 
 		renderingContext.beginPath();
@@ -346,12 +352,13 @@ function Timer(startTime, scale) {
 
 		renderingContext.restore();
 
-		if(this.text) {
-			renderingContext.font = this.fontSize + "pt Arial";
-			renderingContext.fillStyle = "black";
+		var textX = this.x - renderingContext.measureText(this.time.toString()).width/2;
+		var textY = this.y - 2*this.radius;
 
-			renderingContext.fillText(this.time.toString(), this.textX, this.textY + this.fontSize);
-		}
+		renderingContext.font = this.fontSize + "pt Arial";
+		renderingContext.fillStyle = "black";
+
+		renderingContext.fillText(this.time.toString(), textX, textY + this.fontSize);
 	};
 
 	this.checkMouse = function(x, y) {
@@ -1028,8 +1035,8 @@ function Patient(x, y) {
 	this.timer.start();
 
 	this.draw = function(renderingContext) {
-		this.timer.x = this.x + 52;
-		this.timer.y = this.y;
+		this.timer.x = this.x + 63;
+		this.timer.y = this.y + this.timer.radius;
 
 		this.sprite.x = this.x;
 		this.sprite.y = this.y + 50;
