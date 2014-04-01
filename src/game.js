@@ -307,6 +307,8 @@ function Timer(startTime, scale) {
 	this.enabled = true;
 	this.zIndex = 0;
 
+	this.paused = false;
+
 	this.time = startTime;
 	this.onSecondC = [];
 	this.onTimeoutC = [];
@@ -328,6 +330,10 @@ function Timer(startTime, scale) {
 			renderingContext.fillStyle = "orange";
 		} else {
 			renderingContext.fillStyle = "red";
+		}
+
+		if(this.paused) {
+			renderingContext.fillStyle = "#00A0FF";
 		}
 
 		renderingContext.beginPath();
@@ -411,6 +417,7 @@ function Timer(startTime, scale) {
 
 	this.stop = function() {
 		clearInterval(this.interval);
+		this.paused = true;
 	};
 
 	this.getTime = function() {
