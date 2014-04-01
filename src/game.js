@@ -315,9 +315,6 @@ function Timer(startTime, scale) {
 	this.y = 0;
 	this.radius = 20*scale;
 
-	this.textX = 0;
-	this.textY = 0;
-	this.text = false;
 	this.fontSize = 10*scale;
 
 	this.interval = {};
@@ -373,13 +370,11 @@ function Timer(startTime, scale) {
 	};
 
 	this.onMouseHover = function(x, y) {
-		this.textX = x + this.fontSize;
-		this.textY = y;
-		this.text = true;
+
 	};
 
 	this.onMouseOut = function() {
-		this.text = false;
+		
 	};
 
 	this.onMouseClick = function(x, y) {
