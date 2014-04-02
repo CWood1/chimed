@@ -318,13 +318,16 @@ function Timer(startTime, scale) {
 	this.radius = 20*scale;
 
 	this.fontSize = 10*scale;
+	this.colour = false;
 
 	this.interval = {};
 
 	this.draw = function(renderingContext) {
 		renderingContext.strokeStyle = "black";
 
-		if(this.time > 15) {
+		if(this.colour) {
+			renderingContext.fillStyle = this.colour;
+		} else if(this.time > 15) {
 			renderingContext.fillStyle = "green";
 		} else if(this.time > 10) {
 			renderingContext.fillStyle = "orange";
@@ -965,6 +968,8 @@ function Patient(x, y) {
 	this.x = x;
 	this.y = y;
 
+	this.healing = false;
+
 	this.type = Math.floor(Math.random() * 8);
 	if(this.type == 8) {
 		this.type = 7;
@@ -972,60 +977,40 @@ function Patient(x, y) {
 
 	this.sprite = new Sprite("patient" + this.type.toString() + ".jpg", function(x, y) {
 		if(!busy) {
-			that.timer.stop();
+			that.timerLive.stop();
+			that.timerHeal.start();
+
 			busy = that;
-
-			var timeout = 0;
-
-			switch(that.type) {
-				case 0:
-				case 4:
-					timeout = 4;
-					break;
-				case 1:
-				case 5:
-					timeout = 6;
-					break;
-				case 2:
-				case 6:
-					timeout = 8;
-					break;
-				case 3:
-				case 7:
-					timeout = 10;
-					break;
-			}
-
-			setTimeout(function() {
-				that.enabled = false;
-				busy = false;
-
-				score.set(score.get() + that.timer.getTime() * scoreMultiplier);
-			}, timeout * 1000);
+			that.healing = true;
 		}
 	});
-	this.timer = {};
+	this.timerLive = {};
+	this.timerHeal = {};
 
 	switch(this.type) {
 		case 0:
 		case 4:
-			this.timer = new Timer(30);
+			this.timerLive = new Timer(30);
+			this.timerHeal = new Timer(4);
 			break;
 		case 1:
 		case 5:
-			this.timer = new Timer(24);
+			this.timerLive = new Timer(24);
+			this.timerHeal = new Timer(6);
 			break;
 		case 2:
 		case 6:
-			this.timer = new Timer(18);
+			this.timerLive = new Timer(18);
+			this.timerHeal = new Timer(8);
 			break;
 		case 3:
 		case 7:
-			this.timer = new Timer(12);
+			this.timerLive = new Timer(12);
+			this.timerHeal = new Timer(10);
 			break;
 	}
 
-	this.timer.onTimeout(function() {
+	this.timerLive.onTimeout(function() {
 		that.enabled = false;
 		lives.set(lives.get() - 1);
 
@@ -1034,43 +1019,66 @@ function Patient(x, y) {
 		}
 	});
 
-	this.timer.start();
+	this.timerHeal.onTimeout(function() {
+		that.enabled = false;
+		busy = false;
+
+		score.set(score.get() + that.timerLive.getTime() * scoreMultiplier);
+	});
+
+	this.timerHeal.colour = "green";
+
+	this.timerLive.start();
 
 	this.draw = function(renderingContext) {
-		this.timer.x = this.x + 63;
-		this.timer.y = this.y + this.timer.radius;
+		if(this.healing) {
+			this.timerHeal.x = this.x + this.sprite.image.width - this.timerHeal.radius/2;
+			this.timerHeal.y = this.y + this.sprite.image.height/2;
 
-		this.sprite.x = this.x;
-		this.sprite.y = this.y + 50;
+			this.timerHeal.draw(renderingContext);
 
-		this.sprite.draw(renderingContext);
-		this.timer.draw(renderingContext);
-		
+			renderingContext.font = "15px Dnk";
+			renderingContext.fillText("Time", this.x, this.y + this.sprite.image.height/2);
+			renderingContext.fillText("to heal", this.x, this.y + this.sprite.image.height/2 + 20);
+		} else {
+			this.timerLive.x = this.x + this.sprite.image.width - this.timerLive.radius * 2;
+			this.timerLive.y = this.y + this.timerLive.radius;
+
+			this.sprite.x = this.x;
+			this.sprite.y = this.y + 50;
+
+			this.sprite.draw(renderingContext);
+			this.timerLive.draw(renderingContext);
+	
+			renderingContext.font = "15px Dnk";
+			renderingContext.fillText("Time", this.x, this.y + this.timerLive.radius);
+			renderingContext.fillText("to live", this.x, this.y + this.timerLive.radius + 20);
+		}
 	};
 
 	this.checkMouse = function(x, y) {
-		return this.sprite.checkMouse(x, y) || this.timer.checkMouse(x, y);
+		return this.sprite.checkMouse(x, y) || this.timerLive.checkMouse(x, y);
 	};
 
 	this.onMouseHover = function(x, y) {
 		if(this.sprite.checkMouse(x, y)) {
 			this.sprite.onMouseHover(x, y);
-		} else if(this.timer.checkMouse(x, y)) {
-			this.timer.onMouseHover(x, y);
+		} else if(this.timerLive.checkMouse(x, y)) {
+			this.timerLive.onMouseHover(x, y);
 		}
 	};
 
 	this.onMouseClick = function(x, y) {
 		if(this.sprite.checkMouse(x, y)) {
 			this.sprite.onMouseClick(x, y);
-		} else if(this.timer.checkMouse(x, y)) {
-			this.timer.onMouseClick(x, y);
+		} else if(this.timerLive.checkMouse(x, y)) {
+			this.timerLive.onMouseClick(x, y);
 		}
 	};
 
 	this.onMouseOut = function() {
 		this.sprite.onMouseOut();
-		this.timer.onMouseOut();
+		this.timerLive.onMouseOut();
 	};
 }
 
@@ -1094,15 +1102,15 @@ function Ward() {
 	this.draw = function(renderingContext) {
 		this.activeBackground = 0;
 
-		if(this.patients[0]) {
+		if(this.patients[0] && !this.patients[0].healing) {
 			this.activeBackground += 4;
 		}
 
-		if(this.patients[1]) {
+		if(this.patients[1] && !this.patients[1].healing) {
 			this.activeBackground += 2;
 		}
 
-		if(this.patients[2]) {
+		if(this.patients[2] && !this.patients[2].healing) {
 			this.activeBackground += 1;
 		}
 
