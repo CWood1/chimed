@@ -972,12 +972,46 @@ function Patient(x, y) {
 
 	this.healing = false;
 
-	this.type = Math.floor(Math.random() * 8);
-	if(this.type == 8) {
-		this.type = 7;
+	this.timerLive = {};
+	this.timerHeal = {};
+
+	this.scoreMultiplier = 1;
+
+	this.type = Math.floor(Math.random() * 3);
+	if(this.type == 3) {
+		this.type = 2;
 	}
 
-	this.sprite = new Sprite("patient" + this.type.toString() + ".jpg", function(x, y) {
+	patientString = "Sprites/Victims/";
+
+	switch(this.type) {
+		case 0:
+			patientString += "Burn_Victim.png";
+
+			this.timerLive = new Timer(Math.ceil(30*ttlMultiplier));
+			this.timerHeal = new Timer(Math.ceil(4*tthMultiplier));
+			this.scoreMultiplier = 1;
+
+			break;
+		case 1:
+			patientString += "Trauma_Victim.png";
+
+			this.timerLive = new Timer(Math.ceil(24*ttlMultiplier));
+			this.timerHeal = new Timer(Math.ceil(6*tthMultiplier));
+			this.scoreMultiplier = 1.2;
+
+			break;
+		case 2:
+			patientString += "Sick_Victim.png";
+
+			this.timerLive = new Timer(Math.ceil(18*ttlMultiplier));
+			this.timerHeal = new Timer(Math.ceil(8*tthMultiplier));
+			this.scoreMultiplier = 1.4;
+
+			break;
+	}
+
+	this.sprite = new Sprite(patientString, function(x, y) {
 		if(!busy) {
 			that.timerLive.stop();
 			that.timerHeal.start();
@@ -986,37 +1020,10 @@ function Patient(x, y) {
 			that.healing = true;
 		}
 	});
-	this.timerLive = {};
-	this.timerHeal = {};
 
-	this.scoreMultiplier = 1;
-
-	switch(this.type) {
-		case 0:
-		case 4:
-			this.timerLive = new Timer(Math.ceil(30*ttlMultiplier));
-			this.timerHeal = new Timer(Math.ceil(4*tthMultiplier));
-			this.scoreMultiplier = 1;
-			break;
-		case 1:
-		case 5:
-			this.timerLive = new Timer(Math.ceil(24*ttlMultiplier));
-			this.timerHeal = new Timer(Math.ceil(6*tthMultiplier));
-			this.scoreMultiplier = 1.2;
-			break;
-		case 2:
-		case 6:
-			this.timerLive = new Timer(Math.ceil(18*ttlMultiplier));
-			this.timerHeal = new Timer(Math.ceil(8*tthMultiplier));
-			this.scoreMultiplier = 1.4;
-			break;
-		case 3:
-		case 7:
-			this.timerLive = new Timer(Math.ceil(12*ttlMultiplier));
-			this.timerHeal = new Timer(Math.ceil(10*tthMultiplier));
-			this.scoreMultiplier = 1.6;
-			break;
-	}
+	this.healingSprite = new Sprite("Sprites/Doctor_Treating_Sign.png", function(x, y) {
+		// TODO: implement 'stop treating' function here
+	});
 
 	this.timerLive.onTimeout(function() {
 		that.enabled = false;
@@ -1048,6 +1055,11 @@ function Patient(x, y) {
 			renderingContext.font = "15px Dnk";
 			renderingContext.fillText("Time", this.x, this.y + this.sprite.image.height/2);
 			renderingContext.fillText("to heal", this.x, this.y + this.sprite.image.height/2 + 20);
+
+			this.healingSprite.x = this.x + (this.sprite.image.width / 2) - (this.healingSprite.image.width / 2);
+			this.healingSprite.y = this.y + this.sprite.image.height / 2 + 60;
+
+			this.healingSprite.draw(renderingContext);
 		} else {
 			this.timerLive.x = this.x + this.sprite.image.width - this.timerLive.radius * 2;
 			this.timerLive.y = this.y + this.timerLive.radius;
