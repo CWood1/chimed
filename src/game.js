@@ -36,6 +36,8 @@ var lives = new Reactive(0);
 var currentHighScore = new Reactive(0);
 var scoreMultiplier = 0;
 var spawnRate = 0;
+var ttlMultiplier = 1;
+var tthMultiplier = 1;
 var busy = false;
 
 var canvasWidth = 0;
@@ -987,26 +989,32 @@ function Patient(x, y) {
 	this.timerLive = {};
 	this.timerHeal = {};
 
+	this.scoreMultiplier = 1;
+
 	switch(this.type) {
 		case 0:
 		case 4:
-			this.timerLive = new Timer(30);
-			this.timerHeal = new Timer(4);
+			this.timerLive = new Timer(Math.ceil(30*ttlMultiplier));
+			this.timerHeal = new Timer(Math.ceil(4*tthMultiplier));
+			this.scoreMultiplier = 1;
 			break;
 		case 1:
 		case 5:
-			this.timerLive = new Timer(24);
-			this.timerHeal = new Timer(6);
+			this.timerLive = new Timer(Math.ceil(24*ttlMultiplier));
+			this.timerHeal = new Timer(Math.ceil(6*tthMultiplier));
+			this.scoreMultiplier = 1.2;
 			break;
 		case 2:
 		case 6:
-			this.timerLive = new Timer(18);
-			this.timerHeal = new Timer(8);
+			this.timerLive = new Timer(Math.ceil(18*ttlMultiplier));
+			this.timerHeal = new Timer(Math.ceil(8*tthMultiplier));
+			this.scoreMultiplier = 1.4;
 			break;
 		case 3:
 		case 7:
-			this.timerLive = new Timer(12);
-			this.timerHeal = new Timer(10);
+			this.timerLive = new Timer(Math.ceil(12*ttlMultiplier));
+			this.timerHeal = new Timer(Math.ceil(10*tthMultiplier));
+			this.scoreMultiplier = 1.6;
 			break;
 	}
 
@@ -1023,7 +1031,7 @@ function Patient(x, y) {
 		that.enabled = false;
 		busy = false;
 
-		score.set(score.get() + that.timerLive.getTime() * scoreMultiplier);
+		score.set(Math.floor(score.get() + that.timerLive.getTime() * scoreMultiplier * that.scoreMultiplier));
 	});
 
 	this.timerHeal.colour = "green";
@@ -1346,6 +1354,8 @@ function runGame() {
 		scoreMultiplier = 1;
 		spawnRate = 5;
 		lives.set(10);
+		ttlMultiplier = 1;
+		tthMultiplier = 1;
 			// These will need balancing
 
 		diffMenu.enabled = false;
@@ -1355,9 +1365,11 @@ function runGame() {
 		intro.start();
 	});
 	var dMenuMed = new MenuOption("Medium", function(){
-		scoreMultiplier = 1;
-		spawnRate = 5;
-		lives.set(10);
+		scoreMultiplier = 1.3;
+		spawnRate = 3;
+		lives.set(7);
+		ttlMultiplier = 0.8;
+		tthMultiplier = 0.8;
 			// These will need balancing
 
 		diffMenu.enabled = false;
@@ -1367,9 +1379,11 @@ function runGame() {
 		intro.start();
 	});
 	var dMenuHard = new MenuOption("Hard", function(){
-		scoreMultiplier = 1;
-		spawnRate = 5;
-		lives.set(10);
+		scoreMultiplier = 1.5;
+		spawnRate = 1;
+		lives.set(5);
+		ttlMultiplier = 0.5;
+		tthMultiplier = 0.5;
 			// These will need balancing
 
 		diffMenu.enabled = false;
@@ -1478,6 +1492,12 @@ function runGame() {
 		hScore.message = value.toString();
 	});
 
+	score.onChange(function(value) {
+		if(currentHighScore.get() < value) {
+			currentHighScore.set(value);
+		}
+	});
+
 	var hScoreBack = new MenuOption("Back", function() {
 		highScore.enabled = false;
 		mainMenu.enabled = true;
@@ -1508,10 +1528,6 @@ function runGame() {
 		mainMenu.enabled = true;
 
 		mainList.appendSprite(mainMenu);
-
-		if(score.get() > currentHighScore.get()) {
-			currentHighScore.set(score.get());
-		}
 
 		score.set(0);
 		lives.set(0);
