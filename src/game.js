@@ -358,10 +358,10 @@ function Timer(startTime, scale) {
 
 		renderingContext.restore();
 
+		renderingContext.font = this.fontSize + "pt Dnk";
 		var textX = this.x - renderingContext.measureText(this.time.toString()).width/2;
 		var textY = this.y - 2*this.radius;
 
-		renderingContext.font = this.fontSize + "pt Arial";
 		renderingContext.fillStyle = "black";
 
 		renderingContext.fillText(this.time.toString(), textX, textY + this.fontSize);
