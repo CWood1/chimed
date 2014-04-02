@@ -174,9 +174,13 @@ function Sprite(image, onMouseClick) {
 	};
 }
 
-function Animation(continuable) {
+function Animation(continuable, auto) {
 	if(typeof(continuable) === 'undefined') {
 		continuable = true;
+	}
+
+	if(typeof(auto) === 'undefined') {
+		auto = true;
 	}
 
 	var that = this;
@@ -212,7 +216,9 @@ function Animation(continuable) {
 	this.cont.autoClose = false;
 
 	this.complete = function() {
-		clearTimeout(this.interval);
+		if(this.auto) {
+			clearTimeout(this.interval);
+		}
 
 		for(var i = 0; i < this.onCompleteC.length; i++) {
 			this.onCompleteC[i]();
@@ -220,7 +226,9 @@ function Animation(continuable) {
 	};
 
 	this.nextFrame = function() {
-		clearTimeout(this.interval);
+		if(this.auto) {
+			clearTimeout(this.interval);
+		}
 		changeSlides();
 	};
 
@@ -287,7 +295,7 @@ function Animation(continuable) {
 
 		if(that.activeSlide >= that.slides.length) {
 			that.complete();
-		} else {
+		} else if(that.auto) {
 			that.interval = setTimeout(changeSlides, that.slides[that.activeSlide].duration);
 		}
 	}
@@ -295,7 +303,7 @@ function Animation(continuable) {
 	this.start = function() {
 		this.activeSlide = 0;
 
-		if(this.slides.length !== 0) {
+		if(this.slides.length !== 0 && this.auto) {
 			this.interval = setTimeout(changeSlides, this.slides[this.activeSlide].duration);
 		}
 	};
@@ -1236,6 +1244,7 @@ function runGame() {
 	var highScore = new SpriteList();
 	var startScene = new SpriteList();
 	var gameOver = new SpriteList();
+	var tutorial = new SpriteList();
 
 // Main menu //////////////////////////////////////////////////////////////////
 	mainMenu.enabled = true;
@@ -1404,6 +1413,14 @@ function runGame() {
 		mainList.appendSprite(startScene);
 		intro.start();
 	});
+	var dMenuTutorial = new MenuOption("Tutorial", function() {
+		diffMenu.enabled = false;
+		tutorial.enabled = true;
+
+		mainList.appendSprite(tutorial);
+
+		tutorialAnimation.start();
+	});
 	var dMenuRtn = new MenuOption("Return to menu", function(){ 
 		diffMenu.enabled = false;
 		mainMenu.enabled = true;
@@ -1414,6 +1431,7 @@ function runGame() {
 	dMenu.newOption(dMenuEasy);
 	dMenu.newOption(dMenuMed);
 	dMenu.newOption(dMenuHard);
+	dMenu.newOption(dMenuTutorial);
 	dMenu.newOption(dMenuRtn);
 	
 	dMenu.center(renderingContext);
@@ -1549,6 +1567,35 @@ function runGame() {
 	
 	gameOverBox.center(renderingContext);
 	gameOver.appendSprite(gameOverBox);
+
+// Tutorial ///////////////////////////////////////////////////////////////////
+	tutorial.enabled = false;
+
+	var tutorialAnimation = new Animation(true, false);
+
+	var tutSlide1 = new Sprite("Tutorial/Tutorial_One.jpg", function(x, y) {
+
+	});
+	var tutSlide2 = new Sprite("Tutorial/Tutorial_Two.jpg", function(x, y) {
+
+	});
+	var tutSlide3 = new Sprite("Tutorial/Tutorial_Three.jpg", function(x, y) {
+
+	});
+
+	tutorialAnimation.addSlide(tutSlide1, 0);
+	tutorialAnimation.addSlide(tutSlide2, 0);
+	tutorialAnimation.addSlide(tutSlide3, 0);
+
+	tutorialAnimation.zIndex = 100;
+	tutorialAnimation.onComplete(function() {
+		tutorial.enabled = false;
+		diffMenu.enabled = true;
+
+		mainList.appendSprite(diffMenu);
+	});
+
+	tutorial.appendSprite(tutorialAnimation);
 
 // Other stuff ////////////////////////////////////////////////////////////////
 	lives.onChange(function(value) {
