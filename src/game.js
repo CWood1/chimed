@@ -58,6 +58,8 @@ var spawnRate = 0;
 var ttlMultiplier = 1;
 var tthMultiplier = 1;
 var busy = false;
+var unicodeKey = "";
+var hardCode = 0;
 
 var canvasWidth = 0;
 var canvasHeight = 0;
@@ -884,6 +886,269 @@ function MessageBox(x, y, titleText, message, scale) {
 	};
 }
 
+function TextBox(x, y, titleText, scale) {
+	if(typeof(scale) === 'undefined') {
+		scale = 1;
+	}
+
+	this.message = "";
+	this.titleText = titleText;
+	this.options = [];
+	
+	this.typeActive = true;
+
+	this.open = true;
+	this.enabled = true;
+	this.clickOff = false;
+	this.closable = false;
+
+	this.zIndex = 100;
+
+	this.x = x;
+	this.y = y;
+	this.height = 0;
+	this.width = 0;
+
+	this.scale = scale;
+
+	this.fontSize = 15 * this.scale;
+	this.lineHeight = 20 * this.scale;
+	this.border = 1;
+
+	this.buttonWidth = 0;
+
+	// Methods
+	this.close = function() {
+		this.open = false;
+		this.enabled = false;
+	};
+
+	this.updateString = function(strChar){
+		if(this.typeActive == true){
+			this.message = this.message.concat(strChar);
+			unicodeKey = "";
+			console.log(hardCode);
+			if(hardCode == 8){
+				this.message = this.message.substring(0,this.message.length - 2);
+				hardCode = 0;
+			}
+			if(hardCode == 13){
+				this.typeActive = false;
+				this.close();
+				
+				currentHighScore.onChange(function(){getCookie("HighScore",score.get().toString())});
+				
+				getName.onUpdate(function() {set highscore name; 
+											set highscore; });
+											
+				currentHighScore.set(getCookie("HighScore", 0));
+				highScoreOwner.set(getCookie("ScoreOwner", "Nobody"));
+			}
+		}
+	}
+	
+	this.newOption = function(option) {
+		this.options.push(option);
+	};
+
+	this.draw = function(renderingContext) {
+		if(!this.open) {
+			return;
+		}
+
+		this.computeDimensions(renderingContext);
+
+		renderingContext.beginPath();
+		renderingContext.strokeStyle = "black";
+		renderingContext.font = this.fontSize + "px Dnk";
+
+		var lines = this.message.split("\n");
+
+		renderingContext.fillStyle = "#0000FF";
+
+		renderingContext.strokeRect(this.x, this.y, this.width, 2*this.border + this.lineHeight);
+		renderingContext.fillRect(this.x + this.border, this.y + this.border,
+				this.width - 2*this.border, this.lineHeight);
+			// Create the title box
+		renderingContext.fillStyle = "white";
+		renderingContext.fillText(this.titleText,
+				this.x + ((this.width - (this.closable ? this.lineHeight : 0)) / 2) -
+					(renderingContext.measureText(this.titleText).width / 2),
+				this.y + this.border + this.fontSize);
+			// Add the text to the title box
+
+		if(this.closable) {
+			renderingContext.fillStyle = "#FF0000";
+			
+			renderingContext.fillRect(this.x + this.width - (this.lineHeight + this.border),
+					this.y + this.border, this.lineHeight, this.lineHeight);
+				// Create the close button, if it's needed
+		}
+		
+		if(this.typeActive == false){
+			renderingContext.fillStyle = "#0000FF";
+		} else {
+			renderingContext.fillStyle = "#009DFF";
+		}
+
+		renderingContext.strokeRect(this.x, this.y + this.border + this.lineHeight,
+				this.width, lines.length*this.lineHeight + 2*this.border);
+		renderingContext.fillRect(this.x + this.border, this.y + 2*this.border + this.lineHeight,
+				this.width - 2*this.border, lines.length*this.lineHeight);
+			// Create the main box
+
+		renderingContext.fillStyle = "white";
+		for(var i = 0; i < lines.length; i++) {
+			renderingContext.fillText(lines[i], this.x + (this.width / 2) -
+						(renderingContext.measureText(lines[i]).width / 2),
+					this.y + this.fontSize + 2*this.border + this.lineHeight*(i+1));
+				// Add the text to the main box
+		}
+
+		if(this.options.length !== 0) {
+			renderingContext.fillStyle = "#0000FF";
+
+			renderingContext.strokeRect(this.x, this.y + this.height -
+						(6*this.border + this.lineHeight),
+					this.width, 6*this.border + this.lineHeight);
+			renderingContext.fillRect(this.x + this.border, this.y + this.height -
+						(5*this.border + this.lineHeight),
+					this.width - 2*this.border, 4*this.border + this.lineHeight);
+				// Create the button box
+
+			var widthSoFar = 0;
+			for(var i = 0; i < this.options.length; i++) {
+				var itemWidth = renderingContext.measureText(this.options[i].text).width;
+
+				this.options[i].x = this.x + widthSoFar + (this.width / 2) - (this.buttonWidth / 2);
+					// Center the buttons
+				this.options[i].y = this.y + this.height - (4*this.border + this.lineHeight);
+					// One border below the top of the box
+				this.options[i].width = 4*this.border + itemWidth;
+				this.options[i].height = this.lineHeight + 2*this.border;
+
+				renderingContext.strokeRect(this.options[i].x, this.options[i].y,
+						this.options[i].width, this.options[i].height);
+					// Draw the button
+
+				if(this.options[i].hover) {
+					renderingContext.fillStyle = "#0000AA";
+
+					renderingContext.fillRect(this.options[i].x + this.border,
+							this.options[i].y + this.border,
+							this.options[i].width - 2*this.border,
+							this.options[i].height - 2*this.border);
+						// If applicable, fill in the button
+				}
+
+				renderingContext.fillStyle = "white";
+				renderingContext.fillText(this.options[i].text,
+						this.options[i].x + this.border,
+						this.options[i].y + this.fontSize);
+					// Write the text
+
+				widthSoFar += this.options[i].width;
+			}
+			
+		}
+		
+		this.updateString(unicodeKey);
+	};
+
+	this.center = function(renderingContext) {
+		this.computeDimensions(renderingContext);
+		this.x = (canvasWidth / 2) - (this.width / 2);
+		this.y = (canvasHeight / 2) - (this.height / 2);
+	};
+
+	this.computeDimensions = function(renderingContext) {
+		this.width = 0;
+		this.height = 0;
+
+		renderingContext.beginPath();
+		renderingContext.strokeStyle = "black";
+		renderingContext.font = this.fontSize + "px Dnk";
+
+		var lines = this.message.split("\n");
+
+		// Width calculations //////////////////////////////////////////////////////////////////////////
+		for(var i = 0; i < lines.length; i++) {
+			if(renderingContext.measureText(lines[i]).width + 4*this.border > this.width) {
+				this.width = renderingContext.measureText(lines[i]).width + 4*this.border;
+			}
+		}
+
+		if(renderingContext.measureText(this.titleText).width + (this.closable ? this.lineHeight : 0) +
+				4*this.border > this.width) {
+			this.width = renderingContext.measureText(this.titleText).width +
+				(this.closable ? this.lineHeight : 0) + 4*this.border;
+		}
+
+		if(this.options.length !== 0) {
+			var cur = 4*this.border;
+
+			for(var i = 0; i < this.options.length; i++) {
+				cur += 5*this.border + renderingContext.measureText(this.options[i].text).width;
+			}
+
+			if(cur > this.width) {
+				this.width = cur;
+			}
+
+			this.buttonWidth = cur - 4*this.border;
+		}
+
+		// Height calculations /////////////////////////////////////////////////////////////////////////
+		this.height = 2*this.border + this.lineHeight;
+		this.height += this.border + lines.length * this.lineHeight;
+		this.height += 5*this.border + this.lineHeight;
+	};
+
+	this.checkMouse = function(x, y) {
+		if(!this.open) {
+			return false;
+		}
+
+		if(this.x <= x && this.y <= y && this.x + this.width >= x && this.y + this.height >= y) {
+			return true;
+		} else {
+			return false;
+		}
+	};
+
+	this.onMouseHover = function(x, y) {
+		for(var i = 0; i < this.options.length; i++) {
+			if(x >= this.options[i].x && x <= this.options[i].x + this.options[i].width &&
+					y >= this.options[i].y && y <= this.options[i].y + this.options[i].height) {
+				this.options[i].hover = true;
+			} else {
+				this.options[i].hover = false;
+			}
+		}
+	};
+
+	this.onMouseClick = function(x, y) {
+		if(this.y + this.border <= y && this.y + this.lineHeight + this.border >= y &&
+				this.x + this.border + this.width - this.lineHeight <= x &&
+				this.x + this.border + this.width >= x && this.closable) {
+			this.close();
+		}
+
+		for(var i = 0; i < this.options.length; i++) {
+			if(x >= this.options[i].x && x <= this.options[i].x + this.options[i].width &&
+					y >= this.options[i].y && y <= this.options[i].y + this.options[i].height) {
+				this.options[i].action();
+			}
+		}
+	};
+
+	this.onMouseOut = function(x, y) {
+		for(var i = 0; i < this.options.length; i++) {
+			this.options[i].hover = false;
+		}
+	};
+}
+
 function SpriteList() {
 	this.list = [];
 
@@ -1327,6 +1592,10 @@ function runGame() {
 	mmMenu.open = true;
 	mmMenu.center(renderingContext);
 	mainMenu.appendSprite(mmMenu);
+	
+	var txtBox = new TextBox(100, 100, "Enter your Name");
+	
+	mainMenu.appendSprite(txtBox);
 
 	mainList.appendSprite(mainMenu);
 
@@ -1362,6 +1631,7 @@ function runGame() {
 
 		mainList.appendSprite(gamePlay);
 	});
+	
 
 	startScene.appendSprite(intro);
 
@@ -1638,10 +1908,11 @@ function runGame() {
 				// Force a redraw
 		}
 	});
-
+	
+	
 	canvas.addEventListener('mousemove', function(event) {
 		var localCoords = pageToLocalCoords(event.clientX, event.clientY);
-
+		
 		mainList.onMouseHover(localCoords.x, localCoords.y);
 		mainList.draw(renderingContext);
 	});
@@ -1653,8 +1924,13 @@ function runGame() {
 
 	canvas.addEventListener('click', function(event) {
 		var localCoords = pageToLocalCoords(event.clientX, event.clientY);
-
 		mainList.onMouseClick(localCoords.x, localCoords.y);
+		mainList.draw(renderingContext);
+	});
+	
+	document.addEventListener("keydown", function(event){
+		unicodeKey = String.fromCharCode(event.keyCode);
+		hardCode = event.keyCode;
 		mainList.draw(renderingContext);
 	});
 
