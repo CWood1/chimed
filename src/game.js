@@ -322,6 +322,7 @@ function Timer(startTime, scale) {
 	this.paused = false;
 
 	this.time = startTime;
+	this.initial = startTime;
 	this.onSecondC = [];
 	this.onTimeoutC = [];
 
@@ -412,6 +413,7 @@ function Timer(startTime, scale) {
 
 	this.start = function() {
 		var that = this;
+		this.paused = false;
 		this.interval = setInterval(function() {
 			that.time--;
 
@@ -438,6 +440,10 @@ function Timer(startTime, scale) {
 	this.getTime = function() {
 		return this.time;
 	};
+
+	this.getDiff = function() {
+		return this.initial - this.time;
+	}
 }
 
 function MenuOption(text, action) {
@@ -1032,7 +1038,13 @@ function Patient(x, y) {
 	});
 
 	this.healingSprite = new Sprite("Sprites/Doctor_Treating_Sign.png", function(x, y) {
-		// TODO: implement 'stop treating' function here
+		that.healing = false;
+		that.timerHeal.stop();
+
+		that.timerLive.time += that.timerHeal.getDiff();
+		that.timerLive.start();
+
+		busy = false;
 	});
 
 	this.timerLive.onTimeout(function() {
