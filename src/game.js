@@ -1282,13 +1282,10 @@ function runGame() {
 	canvasWidth = canvas.width;
 	canvasHeight = canvas.height;
 
-	var backgroundMusic = new Music("Montauk Point");
-	var introMusic = new Music("Hush");
-	var gameplayMusic = new Music("Hush");
-		// TBD
-	var gameoverMusic = new Music("Plaint");
+	var backgroundMusic = new Music("Dream Culture");
+	var gameplayMusic = new Music("String Impromptu Number 1");
+	var gameoverMusic = new Music("Despair and Triumph");
 
-	introMusic.stop();
 	gameplayMusic.stop();
 	gameoverMusic.stop();
 
@@ -1374,9 +1371,6 @@ function runGame() {
 		ward.schedulePatient(2);
 
 		mainList.appendSprite(gamePlay);
-
-		introMusic.stop();
-		gameplayMusic.play();
 	});
 
 	startScene.appendSprite(intro);
@@ -1438,7 +1432,7 @@ function runGame() {
 		intro.start();
 		
 		backgroundMusic.stop();
-		introMusic.play();
+		gameplayMusic.play();
 	});
 	var dMenuMed = new MenuOption("Medium", function(){
 		scoreMultiplier = 1.3;
@@ -1455,7 +1449,7 @@ function runGame() {
 		intro.start();
 
 		backgroundMusic.stop();
-		introMusic.play();
+		gameplayMusic.play();
 	});
 	var dMenuHard = new MenuOption("Hard", function(){
 		scoreMultiplier = 1.5;
@@ -1472,7 +1466,7 @@ function runGame() {
 		intro.start();
 
 		backgroundMusic.stop();
-		introMusic.play();
+		gameplayMusic.play();
 	});
 	var dMenuTutorial = new MenuOption("Tutorial", function() {
 		diffMenu.enabled = false;
@@ -1619,6 +1613,8 @@ function runGame() {
 
 		gameoverMusic.stop();
 		backgroundMusic.play();
+
+		mainList.draw(renderingContext);
 	});
 
 	gameOverBox.newOption(gameOverButton);
