@@ -18,7 +18,6 @@ chimed
 - Sprite for muting sound effects
 - Artwork changes (plants on menu screen)
 - Optimise for smoothness & speed
-- Add music to credits
 - Buttons need to be bigger
 - Title on main screen
 - Grammatical checks

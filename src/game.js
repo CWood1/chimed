@@ -1813,7 +1813,9 @@ function runGame() {
 	credits.appendSprite(cBackground);
 
 	var cBox = new MessageBox(0, 0, "Credits",
-		"Programmers\nConnor Wood\nCameron Kyle-Davidson\n\nArtwork\nLydia Pauly\n\nGame Design\nBen Williams");
+		"Programmers\nConnor Wood\nCameron Kyle-Davidson\n\n" +
+		"Artwork\nLydia Pauly\n\nGame Design\nBen Williams\n\n" +
+		"Music\nKevin MacLeod - incompetech.com");
 
 	var cBoxBack = new MenuOption("Back", function() {
 		credits.enabled = false;
