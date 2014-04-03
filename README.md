@@ -14,7 +14,6 @@ chimed
  - Healed noise
 - Balance game
 - Game over slides
-- Fullscreen or center game
 - Sprite for mute button
 - Sprite for muting sound effects
 - Artwork changes (plants on menu screen)
