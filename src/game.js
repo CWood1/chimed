@@ -197,6 +197,8 @@ function Animation(continuable, auto) {
 	this.skip = new Menu(0, 0);
 	this.cont = new Menu(0, 0);
 
+	this.auto = auto;
+
 	this.interval = {};
 
 	var skipItem = new MenuOption("Skip", function() {
@@ -1085,28 +1087,50 @@ function Patient(x, y) {
 	};
 
 	this.checkMouse = function(x, y) {
-		return this.sprite.checkMouse(x, y) || this.timerLive.checkMouse(x, y);
+		if(this.healing) {
+			return this.healingSprite.checkMouse(x, y) || this.timerHeal.checkMouse(x, y);
+		} else {
+			return this.sprite.checkMouse(x, y) || this.timerLive.checkMouse(x, y);
+		}
 	};
 
 	this.onMouseHover = function(x, y) {
-		if(this.sprite.checkMouse(x, y)) {
-			this.sprite.onMouseHover(x, y);
-		} else if(this.timerLive.checkMouse(x, y)) {
-			this.timerLive.onMouseHover(x, y);
+		if(this.healing) {
+			if(this.healingSprite.checkMouse(x, y)) {
+				this.healingSprite.onMouseHover(x, y);
+			} else if(this.timerHeal.checkMouse(x, y)) {
+				this.timerHeal.onMouseHover(x, y);
+			}
+		} else {
+			if(this.sprite.checkMouse(x, y)) {
+				this.sprite.onMouseHover(x, y);
+			} else if(this.timerLive.checkMouse(x, y)) {
+				this.timerLive.onMouseHover(x, y);
+			}
 		}
 	};
 
 	this.onMouseClick = function(x, y) {
-		if(this.sprite.checkMouse(x, y)) {
-			this.sprite.onMouseClick(x, y);
-		} else if(this.timerLive.checkMouse(x, y)) {
-			this.timerLive.onMouseClick(x, y);
+		if(this.healing) {
+			if(this.healingSprite.checkMouse(x, y)) {
+				this.healingSprite.onMouseClick(x, y);
+			} else if(this.timerHeal.checkMouse(x, y)) {
+				this.timerHeal.onMouseClick(x, y);
+			}
+		} else {
+			if(this.sprite.checkMouse(x, y)) {
+				this.sprite.onMouseClick(x, y);
+			} else if(this.timerLive.checkMouse(x, y)) {
+				this.timerLive.onMouseClick(x, y);
+			}
 		}
 	};
 
 	this.onMouseOut = function() {
 		this.sprite.onMouseOut();
 		this.timerLive.onMouseOut();
+		this.healingSprite.onMouseOut();
+		this.timerHeal.onMouseOut();
 	};
 }
 
