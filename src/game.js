@@ -194,28 +194,16 @@ function Animation(continuable, auto) {
 	this.onCompleteC = [];
 
 	this.continuable = continuable;
-	this.skip = new Menu(0, 0);
-	this.cont = new Menu(0, 0);
-
 	this.auto = auto;
 
 	this.interval = {};
 
-	var skipItem = new MenuOption("Skip", function() {
+	this.skip = new Sprite("Buttons/Skip.png", function(x, y) {
 		that.complete();
 	});
-
-	this.skip.newOption(skipItem);
-	this.skip.open = true;
-	this.skip.autoClose = false;
-	
-	var contItem = new MenuOption("Continue", function() {
+	this.cont = new Sprite("Buttons/Next.png", function(x, y) {
 		that.nextFrame();
 	});
-
-	this.cont.newOption(contItem);
-	this.cont.open = this.continuable;
-	this.cont.autoClose = false;
 
 	this.complete = function() {
 		if(this.auto) {
@@ -246,20 +234,19 @@ function Animation(continuable, auto) {
 	};
 
 	this.draw = function(renderingContext) {
-		this.skip.computeDimensions(renderingContext);
-		this.cont.computeDimensions(renderingContext);
-
 		this.slides[this.activeSlide].draw(renderingContext);
 
-		this.cont.x = 0;
-		this.cont.y = this.slides[this.activeSlide].image.height - this.cont.height;
-
-		this.cont.draw(renderingContext);
-
-		this.skip.x = this.slides[this.activeSlide].image.width - this.skip.width;
-		this.skip.y = this.slides[this.activeSlide].image.height - this.skip.height;
+		this.skip.x = this.slides[this.activeSlide].image.width - this.skip.image.width;
+		this.skip.y = this.slides[this.activeSlide].image.height - this.skip.image.height;
 
 		this.skip.draw(renderingContext);
+
+		if(this.continuable) {
+			this.cont.x = this.slides[this.activeSlide].image.width - (this.skip.image.width + this.cont.image.width);
+			this.cont.y = this.slides[this.activeSlide].image.height - this.cont.image.height;
+
+			this.cont.draw(renderingContext);
+		}
 	};
 
 	this.checkMouse = function(x, y) {
@@ -1275,7 +1262,6 @@ function runGame() {
 	var mainMenu = new SpriteList();
 	var diffMenu = new SpriteList();
 	var gamePlay = new SpriteList();
-	var optsMenu = new SpriteList();
 	var credits = new SpriteList();
 	var highScore = new SpriteList();
 	var startScene = new SpriteList();
@@ -1299,12 +1285,6 @@ function runGame() {
 
 		mainList.appendSprite(diffMenu);
 	});
-	var mmMenuOptOptions = new MenuOption("Options", function() {
-		mainMenu.enabled = false;
-		optsMenu.enabled = true;
-
-		mainList.appendSprite(optsMenu);
-	});
 	var mmMenuOptCredits = new MenuOption("Credits", function() {
 		mainMenu.enabled = false;
 		credits.enabled = true;
@@ -1319,7 +1299,6 @@ function runGame() {
 	});
 
 	mmMenu.newOption(mmMenuOptPlay);
-	mmMenu.newOption(mmMenuOptOptions);
 	mmMenu.newOption(mmMenuOptCredits);
 	mmMenu.newOption(mmMenuOptHighScore);
 
@@ -1475,52 +1454,36 @@ function runGame() {
 	diffMenu.appendSprite(dMenu);
 
 // Options menu ///////////////////////////////////////////////////////////////
-	optsMenu.enabled = false;
+	muteButton = new Sprite("Buttons/Mute.png", function(x, y) {
+		muteButton.enabled = false;
+		unmuteButton.enabled = true;
 
-	var optsBackground = new Sprite("background.jpg", function(x, y) { });
-	optsBackground.zIndex = -1;
-	optsMenu.appendSprite(optsBackground);
+		sound.set(false);
+		music.set(false);
 
-	var oMenu = new Menu(0, 0, 1.5);
-	oMenu.autoClose = false;
-	oMenu.open = true;
-
-	var oMenuToggleSound = new MenuOption("Sound off", function() {
-		this.toggle = !this.toggle;
-		sound.set(this.toggle);
-
-		if(this.toggle) {
-			this.text = "Sound off";
-		} else {
-			this.text = "Sound on";
-		}
+		mainList.appendSprite(unmuteButton);
 	});
-	oMenuToggleSound.toggle = true;
-	oMenu.newOption(oMenuToggleSound);
+	unmuteButton = new Sprite("Buttons/Unmute.png", function(x, y) {
+		muteButton.enabled = true;
+		unmuteButton.enabled = false;
 
-	var oMenuToggleMusic = new MenuOption("Music off", function() {
-		this.toggle = !this.toggle;
-		music.set(this.toggle);
+		sound.set(true);
+		music.set(true);
 
-		if(this.toggle) {
-			this.text = "Music off";
-		} else {
-			this.text = "Music on";
-		}
+		mainList.appendSprite(muteButton);
 	});
-	oMenuToggleMusic.toggle = true;
-	oMenu.newOption(oMenuToggleMusic);
 
-	var oMenuBack = new MenuOption("Back to main menu", function() {
-		optsMenu.enabled = false;
-		mainMenu.enabled = true;
+	muteButton.zIndex = 100;
+	unmuteButton.zIndex = 100;
 
-		mainList.appendSprite(mainMenu);
-	});
-	oMenu.newOption(oMenuBack);
-	oMenu.center(renderingContext);
+	muteButton.x = 0;
+	unmuteButton.x = 0;
 
-	optsMenu.appendSprite(oMenu);
+	muteButton.y = canvasHeight - muteButton.image.height;
+	unmuteButton.y = canvasHeight - unmuteButton.image.height;
+
+	muteButton.enabled = true;
+	mainList.appendSprite(muteButton);
 
 // Credits ////////////////////////////////////////////////////////////////////
 	credits.enabled = false;
