@@ -29,11 +29,30 @@ function Reactive(initial) {
 	};
 }
 
+function getCookie(name, defaultValue) {
+	cookies = document.cookie.split(';');
+		// Get an array of all cookies
+	
+	for(var i = 0; i < cookies.length; i++) {
+		while(cookies[i].charAt(0) == ' ') {
+			cookies[i] = cookies[i].substring(1, cookies[i].length);
+		}
+
+		if(cookies[i].indexOf(name) == 0) {
+			return cookies[i].substring(name.length + 1, cookies[i].length);
+				// Add 1, for the =
+		}
+	}
+
+	return defaultValue;
+}
+
 var sound = new Reactive(true);
 var music = new Reactive(true);
 var score = new Reactive(0);
 var lives = new Reactive(0);
 var currentHighScore = new Reactive(0);
+var highScoreOwner = new Reactive("Nobody");
 var scoreMultiplier = 0;
 var spawnRate = 0;
 var ttlMultiplier = 1;
@@ -1249,6 +1268,8 @@ function Ward() {
 }
 
 function runGame() {
+	currentHighScore.set(getCookie("HighScore", 0));
+	highScoreOwner.set(getCookie("ScoreOwner", "Nobody"));
 	var canvas = document.getElementById("mainGame");
 	var renderingContext = canvas.getContext("2d");
 
@@ -1515,10 +1536,20 @@ function runGame() {
 	hBackground.zIndex = -1;
 	highScore.appendSprite(hBackground);
 
-	var hScore = new MessageBox(0, 0, "High Score", currentHighScore.get().toString());
+	var hScore = new MessageBox(0, 0, "High Score", highScoreOwner.get() + "\n" +
+		       currentHighScore.get().toString());
 
 	currentHighScore.onChange(function(value) {
-		hScore.message = value.toString();
+		hScore.message = highScoreOwner.get() + "\n" +
+			value.toString();
+	});
+
+	currentHighScore.onChange(function(value) {
+		var date = new Date();
+		date.setTime(date.getTime() + 100*365*24*60*60*1000);
+			// Expires in 100 years time
+		document.cookie = "HighScore=" + value.toString() + "; expires=" + date.toGMTString() + "; path=/";
+		document.cookie = "ScoreOwner=" + highScoreOwner.get() + "; expires=" + date.toGMTString() + "; path=/";
 	});
 
 	score.onChange(function(value) {
