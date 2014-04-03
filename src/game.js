@@ -58,8 +58,6 @@ var spawnRate = 0;
 var ttlMultiplier = 1;
 var tthMultiplier = 1;
 var busy = false;
-var unicodeKey = "";
-var hardCode = 0;
 
 var canvasWidth = 0;
 var canvasHeight = 0;
@@ -923,32 +921,39 @@ function TextBox(x, y, titleText, scale) {
 
 	this.buttonWidth = 0;
 
+	this.onUpdateC = [];
+	this.onEnterC = [];
+
 	// Methods
 	this.close = function() {
 		this.open = false;
 		this.enabled = false;
+
+		document.removeHandler(keyHandler);
 	};
 
-	this.updateString = function(strChar){
-		if(this.typeActive == true){
-			this.message = this.message.concat(strChar);
-			unicodeKey = "";
-			console.log(hardCode);
-			if(hardCode == 8){
-				this.message = this.message.substring(0,this.message.length - 2);
-				hardCode = 0;
-			}
-			if(hardCode == 13){
-				this.typeActive = false;
-				this.close();
-				
-				currentHighScore.onChange(function(){getCookie("HighScore",score.get().toString())});
-				
-				getName.onUpdate(function() {set highscore name; 
-											set highscore; });
-											
-				currentHighScore.set(getCookie("HighScore", 0));
-				highScoreOwner.set(getCookie("ScoreOwner", "Nobody"));
+	this.onUpdate = function(callback) {
+		this.onUpdateC.push(callback);
+	}
+
+	this.onEnter = function(callback) {
+		this.onEnterC.push(callback);
+	}
+
+	this.update = function(strChar, hardCode){
+		this.message = this.message.concat(strChar);
+
+		if(hardCode == 8){
+			this.message = this.message.substring(0,this.message.length - 2);
+		}
+
+		for(var i = 0; i < this.onUpdateC.length; i++) {
+			this.onUpdateC[i]();
+		}
+
+		if(hardCode == 13){
+			for(var i = 0; i < this.onEnterC.length; i++) {
+				this.onEnterC[i]();
 			}
 		}
 	}
@@ -1057,8 +1062,6 @@ function TextBox(x, y, titleText, scale) {
 			}
 			
 		}
-		
-		this.updateString(unicodeKey);
 	};
 
 	this.center = function(renderingContext) {
@@ -1153,6 +1156,13 @@ function TextBox(x, y, titleText, scale) {
 			this.options[i].hover = false;
 		}
 	};
+
+	var that=this;
+	document.addEventListener("keydown", keyHandler);
+	
+	function keyHandler(event) {
+		that.update(String.fromCharCode(event.keyCode), event.keyCode);
+	}
 }
 
 function SpriteList() {
@@ -1541,6 +1551,7 @@ function Ward() {
 function runGame() {
 	currentHighScore.set(getCookie("HighScore", 0));
 	highScoreOwner.set(getCookie("ScoreOwner", "Nobody"));
+
 	var canvas = document.getElementById("mainGame");
 	var renderingContext = canvas.getContext("2d");
 
@@ -1564,6 +1575,7 @@ function runGame() {
 	var startScene = new SpriteList();
 	var gameOver = new SpriteList();
 	var tutorial = new SpriteList();
+	var enterName = new SpriteList();
 
 // Main menu //////////////////////////////////////////////////////////////////
 	mainMenu.enabled = true;
@@ -1602,10 +1614,6 @@ function runGame() {
 	mmMenu.open = true;
 	mmMenu.center(renderingContext);
 	mainMenu.appendSprite(mmMenu);
-	
-	var txtBox = new TextBox(100, 100, "Enter your Name");
-	
-	mainMenu.appendSprite(txtBox);
 
 	mainList.appendSprite(mainMenu);
 
@@ -1638,6 +1646,8 @@ function runGame() {
 		ward.createPatient(0);
 		ward.schedulePatient(1);
 		ward.schedulePatient(2);
+
+		score.set(0);
 
 		mainList.appendSprite(gamePlay);
 	});
@@ -1818,6 +1828,34 @@ function runGame() {
 	cBox.center(renderingContext);
 	credits.appendSprite(cBox);
 
+// Enter name /////////////////////////////////////////////////////////////////
+	enterName.enabled = false;
+
+	var enBackground = new Sprite("background.jpg", function(x, y) { });
+	enBackground.zIndex = -1;
+	enterName.appendSprite(enBackground);
+
+	var textBox = new TextBox(0, 0, "Enter your name");
+	textBox.center(renderingContext);
+
+	textBox.onUpdate(function() {
+		textBox.center(renderingContext);
+
+		console.log(this);
+	});
+
+	textBox.onEnter(function() {
+		enterName.enabled = false;
+		mainMenu.enabled = true;
+
+		mainList.appendSprite(mainMenu);
+
+		highScoreOwner.set(textBox.message);
+		currentHighScore.set(score.get());
+	});
+
+	enterName.appendSprite(textBox);
+
 // High Score /////////////////////////////////////////////////////////////////
 	highScore.enabled = false;
 
@@ -1831,6 +1869,7 @@ function runGame() {
 	currentHighScore.onChange(function(value) {
 		hScore.message = highScoreOwner.get() + "\n" +
 			value.toString();
+		hScore.center(renderingContext);
 	});
 
 	currentHighScore.onChange(function(value) {
@@ -1839,12 +1878,6 @@ function runGame() {
 			// Expires in 100 years time
 		document.cookie = "HighScore=" + value.toString() + "; expires=" + date.toGMTString() + "; path=/";
 		document.cookie = "ScoreOwner=" + highScoreOwner.get() + "; expires=" + date.toGMTString() + "; path=/";
-	});
-
-	score.onChange(function(value) {
-		if(currentHighScore.get() < value) {
-			currentHighScore.set(value);
-		}
 	});
 
 	var hScoreBack = new MenuOption("Back", function() {
@@ -1874,12 +1907,18 @@ function runGame() {
 
 	var gameOverButton = new MenuOption("Back to Main Menu", function() {
 		gameOver.enabled = false;
-		mainMenu.enabled = true;
+		console.log(score.get());
+		console.log(currentHighScore.get());
 
-		mainList.appendSprite(mainMenu);
+		if(score.get() > currentHighScore.get()) {
+			enterName.enabled = true;
 
-		score.set(0);
-		lives.set(0);
+			mainList.appendSprite(enterName);
+		} else {
+			mainMenu.enabled = true;
+
+			mainList.appendSprite(mainMenu);
+		}
 
 		gameoverMusic.stop();
 		backgroundMusic.play();
@@ -1928,8 +1967,6 @@ function runGame() {
 			gameOver.enabled = true;
 
 			mainList.appendSprite(gameOver);
-			mainList.draw(renderingContext);
-				// Force a redraw
 
 			gameplayMusic.stop();
 			gameoverMusic.play();
@@ -1952,12 +1989,6 @@ function runGame() {
 	canvas.addEventListener('click', function(event) {
 		var localCoords = pageToLocalCoords(event.clientX, event.clientY);
 		mainList.onMouseClick(localCoords.x, localCoords.y);
-		mainList.draw(renderingContext);
-	});
-	
-	document.addEventListener("keydown", function(event){
-		unicodeKey = String.fromCharCode(event.keyCode);
-		hardCode = event.keyCode;
 		mainList.draw(renderingContext);
 	});
 
