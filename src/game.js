@@ -100,17 +100,21 @@ function Sound(file) {
 
 function Music(file) {
 	this.audio = new Sound(file);
+	this.playing = true;
+
 	var that = this;
 		// Used for the callback
 
 	this.play = function() {
 		if(music.get()) {
 			this.audio.play();
+			this.playing = true;
 		}
 	};
 
 	this.stop = function() {
 		this.audio.pause();
+		this.playing = false;
 	};
 
 	this.audio.addEventListener('ended', function() {
@@ -125,7 +129,9 @@ function Music(file) {
 		if(value === true) {
 			that.audio.currentTime = 0;
 
-			that.audio.play();
+			if(this.playing) {
+				that.audio.play();
+			}
 		} else {
 			that.audio.pause();
 		}
@@ -1541,7 +1547,12 @@ function runGame() {
 	canvasWidth = canvas.width;
 	canvasHeight = canvas.height;
 
-	var backgroundMusic = new Music("music");
+	var backgroundMusic = new Music("Dream Culture");
+	var gameplayMusic = new Music("String Impromptu Number 1");
+	var gameoverMusic = new Music("Despair and Triumph");
+
+	gameplayMusic.stop();
+	gameoverMusic.stop();
 
 	var mainList = new SpriteList();
 
@@ -1567,7 +1578,6 @@ function runGame() {
 	var mmMenuOptPlay = new MenuOption("Play", function() {
 		mainMenu.enabled = false;
 		diffMenu.enabled = true;
-		//gamePlay.enabled = true;
 
 		mainList.appendSprite(diffMenu);
 	});
@@ -1602,7 +1612,7 @@ function runGame() {
 // Starting Cutscene //////////////////////////////////////////////////////////
 	startScene.enabled = false;
 
-	var intro = new Animation(false);
+	var intro = new Animation(true, false);
 
 	var slide1 = new Sprite("Start_Slide_First.jpg", function(x, y) {
 
@@ -1690,6 +1700,9 @@ function runGame() {
 
 		mainList.appendSprite(startScene);
 		intro.start();
+		
+		backgroundMusic.stop();
+		gameplayMusic.play();
 	});
 	var dMenuMed = new MenuOption("Medium", function(){
 		scoreMultiplier = 1.3;
@@ -1704,6 +1717,9 @@ function runGame() {
 
 		mainList.appendSprite(startScene);
 		intro.start();
+
+		backgroundMusic.stop();
+		gameplayMusic.play();
 	});
 	var dMenuHard = new MenuOption("Hard", function(){
 		scoreMultiplier = 1.5;
@@ -1718,6 +1734,9 @@ function runGame() {
 
 		mainList.appendSprite(startScene);
 		intro.start();
+
+		backgroundMusic.stop();
+		gameplayMusic.play();
 	});
 	var dMenuTutorial = new MenuOption("Tutorial", function() {
 		diffMenu.enabled = false;
@@ -1861,6 +1880,11 @@ function runGame() {
 
 		score.set(0);
 		lives.set(0);
+
+		gameoverMusic.stop();
+		backgroundMusic.play();
+
+		mainList.draw(renderingContext);
 	});
 
 	gameOverBox.newOption(gameOverButton);
@@ -1906,6 +1930,9 @@ function runGame() {
 			mainList.appendSprite(gameOver);
 			mainList.draw(renderingContext);
 				// Force a redraw
+
+			gameplayMusic.stop();
+			gameoverMusic.play();
 		}
 	});
 	
