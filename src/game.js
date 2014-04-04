@@ -1798,7 +1798,7 @@ function runGame() {
 		pauseOverlay.y = 0;
 	});
 	
-	pauseOverlay.zIndex = 100;
+	pauseOverlay.zIndex = 101;
 	
 	if(paused == true){
 		mainList.appendSprite(pauseOverlay);
