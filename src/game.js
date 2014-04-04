@@ -449,22 +449,31 @@ function Timer(startTime, scale) {
 	this.start = function() {
 		var that = this;
 		this.paused = false;
-		this.interval = setInterval(function() {
-			that.time--;
 
-			for(var i = 0; i < that.onSecondC.length; i++) {
-				that.onSecondC[i](that.time);
+		if(startTime <= 0) {
+			this.enabled = false;
+
+			for(var i = 0; i < this.onTimeoutC; i++) {
+				this.onTimeoutC[i]();
 			}
+		} else {
+			this.interval = setInterval(function() {
+				that.time--;
 
-			if(that.time === 0) {
-				clearInterval(that.interval);
-				that.enabled = false;
-
-				for(var i = 0; i < that.onTimeoutC.length; i++) {
-					that.onTimeoutC[i]();
+				for(var i = 0; i < that.onSecondC.length; i++) {
+					that.onSecondC[i](that.time);
 				}
-			}
-		}, 1000);
+
+				if(that.time === 0) {
+					clearInterval(that.interval);
+					that.enabled = false;
+
+					for(var i = 0; i < that.onTimeoutC.length; i++) {
+						that.onTimeoutC[i]();
+					}
+				}
+			}, 1000);
+		}
 	};
 
 	this.stop = function() {
@@ -1329,6 +1338,10 @@ function Patient(x, y, sprites, doctorTreating) {
 			break;
 	}
 
+	if(this.timerLive.time <= 0) {
+		this.timerLive = new Timer(1);
+	}
+
 	this.sprite = new Sprite(sprites[this.type], function(x, y) {
 		if(!busy) {
 			EventSound("AmbientSounds/Shower Curtain");
@@ -1342,7 +1355,9 @@ function Patient(x, y, sprites, doctorTreating) {
 	});
 
 	this.healingSprite = new Sprite(doctorTreating, function(x, y) {
-		EventSound("AmbientSounds/Shower Curtain");
+		if(lives.get() != 0) {
+			EventSound("AmbientSounds/Shower Curtain");
+		}
 
 		that.healing = false;
 		that.timerHeal.stop();
@@ -1350,12 +1365,16 @@ function Patient(x, y, sprites, doctorTreating) {
 		that.timerLive.time += that.timerHeal.getDiff();
 		that.timerLive.start();
 
+		that.timerLive.initial = that.timerLive.time;
 		busy = false;
 	});
 
 	this.timerLive.onTimeout(function() {
-		EventSound("AmbientSounds/Shower Curtain");
-		EventSound("AmbientSounds/Death");
+		if(lives.get() != 0) {
+			EventSound("AmbientSounds/Shower Curtain");
+			EventSound("AmbientSounds/Death");
+		}
+
 		that.enabled = false;
 		lives.set(lives.get() - 1);
 
@@ -1373,7 +1392,6 @@ function Patient(x, y, sprites, doctorTreating) {
 	});
 
 	this.timerHeal.colour = "green";
-
 	this.timerLive.start();
 
 	this.draw = function(renderingContext) {
@@ -1561,9 +1579,11 @@ function Ward() {
 
 	var that = this;
 	this.schedulePatient = function(n) {
+		x = Math.floor(spawnRate * 1000) - Math.floor(score.get() / 25);
+
 		setTimeout(function() {
 			that.createPatient(n);
-		}, Math.floor(spawnRate * 1000) - Math.floor(score.get() / 25));
+		}, (x <= 0) ? 1 : x);
 	};
 
 	this.createPatient = function(n) {
@@ -2024,7 +2044,12 @@ function runGame() {
 			gameOverAnim.start();
 		}
 	});
-	
+
+	lives.onChange(function(value) {
+		if(value == 0) {
+			sound.set(false);
+		}
+	});
 	
 	canvas.addEventListener('mousemove', function(event) {
 		var localCoords = pageToLocalCoords(event.clientX, event.clientY);
