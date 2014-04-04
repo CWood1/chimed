@@ -2025,7 +2025,7 @@ function runGame() {
 	muteButton.enabled = true;
 	pauseButton.enabled = true;
 	mainList.appendSprite(muteButton);
-	mainList.appendSprite(pauseButton);
+	gamePlay.appendSprite(pauseButton);
 
 // Credits ////////////////////////////////////////////////////////////////////
 	credits.enabled = false;
