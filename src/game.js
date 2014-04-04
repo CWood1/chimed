@@ -1831,11 +1831,15 @@ function runGame() {
 	muteButton.zIndex = 100;
 	unmuteButton.zIndex = 100;
 
-	muteButton.x = 0;
-	unmuteButton.x = 0;
+	muteButton.onLoad(function() {
+		muteButton.x = 0;
+		muteButton.y = canvasHeight - muteButton.image.height;
+	});
 
-	muteButton.y = canvasHeight - muteButton.image.height;
-	unmuteButton.y = canvasHeight - unmuteButton.image.height;
+	unmuteButton.onLoad(function() {
+		unmuteButton.x = 0;
+		unmuteButton.y = canvasHeight - unmuteButton.image.height;
+	});
 
 	muteButton.enabled = true;
 	mainList.appendSprite(muteButton);
