@@ -1623,6 +1623,7 @@ function runGame() {
 	});
 
 	mmMenu.newOption(mmMenuOptPlay);
+	mmMenu.newOption(mmMenuTutorial);
 	mmMenu.newOption(mmMenuOptCredits);
 	mmMenu.newOption(mmMenuOptHighScore);
 
