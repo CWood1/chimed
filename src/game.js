@@ -104,9 +104,10 @@ function Music(file) {
 		// Used for the callback
 
 	this.play = function() {
+		this.playing = true;
+
 		if(music.get()) {
 			this.audio.play();
-			this.playing = true;
 		}
 	};
 
@@ -127,7 +128,7 @@ function Music(file) {
 		if(value === true) {
 			that.audio.currentTime = 0;
 
-			if(this.playing) {
+			if(that.playing) {
 				that.audio.play();
 			}
 		} else {
@@ -1309,19 +1310,19 @@ function Patient(x, y, sprites, doctorTreating) {
 
 	switch(this.type) {
 		case 0:
-			this.timerLive = new Timer(Math.ceil(30*ttlMultiplier));
+			this.timerLive = new Timer(Math.ceil(20*ttlMultiplier) - Math.floor(score.get() / 25));
 			this.timerHeal = new Timer(Math.ceil(4*tthMultiplier));
 			this.scoreMultiplier = 1;
 
 			break;
 		case 1:
-			this.timerLive = new Timer(Math.ceil(24*ttlMultiplier));
+			this.timerLive = new Timer(Math.ceil(18*ttlMultiplier) - Math.floor(score.get() / 25));
 			this.timerHeal = new Timer(Math.ceil(6*tthMultiplier));
 			this.scoreMultiplier = 1.2;
 
 			break;
 		case 2:
-			this.timerLive = new Timer(Math.ceil(18*ttlMultiplier));
+			this.timerLive = new Timer(Math.ceil(16*ttlMultiplier) - Math.floor(score.get() / 25));
 			this.timerHeal = new Timer(Math.ceil(8*tthMultiplier));
 			this.scoreMultiplier = 1.4;
 
@@ -1400,6 +1401,10 @@ function Patient(x, y, sprites, doctorTreating) {
 	};
 
 	this.checkMouse = function(x, y) {
+		if(!this.enabled) {
+			return false;
+		}
+
 		if(this.healing) {
 			return this.healingSprite.checkMouse(x, y) || this.timerHeal.checkMouse(x, y);
 		} else {
@@ -1551,7 +1556,7 @@ function Ward() {
 	this.schedulePatient = function(n) {
 		setTimeout(function() {
 			that.createPatient(n);
-		}, Math.floor(Math.random() * spawnRate) * 1000);
+		}, Math.floor(spawnRate * 1000) - Math.floor(score.get() / 25));
 	};
 
 	this.createPatient = function(n) {
