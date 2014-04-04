@@ -2068,9 +2068,18 @@ function runGame() {
 		mainList.onMouseClick(localCoords.x, localCoords.y);
 		mainList.draw(renderingContext);
 	});
+	
+	
 
 	mainList.draw(renderingContext);
 	setInterval(function() {
+		//I guess this probably shouldn't go in the main loop, but it doesn't seem to cause a performance hit and works fine.
+		var playAmbulance = Math.round(Math.random()*10000);
+		var playCough = Math.round(Math.random()*10000);
+		if(playAmbulance < 10){EventSound("AmbientSounds/Ambulance");
+								console.log("Playing Ambulance");};
+		if(playCough < 10){EventSound("AmbientSounds/Cough");
+							console.log("Playing Cough");};
 		mainList.draw(renderingContext);
 	}, 50);
 }
