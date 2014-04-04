@@ -3,7 +3,7 @@ chimed
 
 # Left to do
 ## Bugfixes
-- Patient sprites sometimes take too long to load, and time out. Optimize
+- Nothing here :)
 
 ## Features
 ### Artwork
@@ -24,5 +24,4 @@ chimed
 
 ### Possible for the Future
 - Goals/levels to work towards
-- Increasing difficulty as the game progresses
 
