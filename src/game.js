@@ -164,12 +164,26 @@ function Sprite(image, onMouseClick) {
 	this.loaded = false;
 	this.enabled = true;
 
-	this.image = new Image();
-	this.image.onload = function() {
-		that.loaded = true;
-	};
+	this.onLoadC = [];
 
-	this.image.src = image;	// Save the image itself
+	this.image = {};
+
+	if(typeof(image) === 'string') {
+		this.image = new Image();
+		this.image.onload = function() {
+			that.loaded = true;
+
+			for(var i = 0; i < that.onLoadC.length; i++) {
+				that.onLoadC[i]();
+			}
+		};
+
+		this.image.src = image;	// Save the image itself
+	} else {
+		this.image = image;
+		this.loaded = true;
+			// Assume we've been given an image
+	}
 
 	// Methods
 	this.draw = function(renderingContext) {
@@ -178,6 +192,14 @@ function Sprite(image, onMouseClick) {
 		}
 
 		renderingContext.drawImage(this.image, this.x, this.y);
+	};
+
+	this.onLoad = function(callback) {
+		if(this.loaded) {
+			callback();
+		} else {
+			this.onLoadC.push(callback);
+		}
 	};
 	
 	this.checkMouse = function(x, y) {
@@ -1263,7 +1285,7 @@ function SpriteList() {
 	};
 }
 
-function Patient(x, y) {
+function Patient(x, y, sprites, doctorTreating) {
 	var that = this;
 
 	this.enabled = true;
@@ -1285,28 +1307,20 @@ function Patient(x, y) {
 		this.type = 2;
 	}
 
-	patientString = "Sprites/Victims/";
-
 	switch(this.type) {
 		case 0:
-			patientString += "Sick_Victim.png";
-
 			this.timerLive = new Timer(Math.ceil(30*ttlMultiplier));
 			this.timerHeal = new Timer(Math.ceil(4*tthMultiplier));
 			this.scoreMultiplier = 1;
 
 			break;
 		case 1:
-			patientString += "Trauma_Victim.png";
-
 			this.timerLive = new Timer(Math.ceil(24*ttlMultiplier));
 			this.timerHeal = new Timer(Math.ceil(6*tthMultiplier));
 			this.scoreMultiplier = 1.2;
 
 			break;
 		case 2:
-			patientString += "Burn_Victim.png";
-
 			this.timerLive = new Timer(Math.ceil(18*ttlMultiplier));
 			this.timerHeal = new Timer(Math.ceil(8*tthMultiplier));
 			this.scoreMultiplier = 1.4;
@@ -1314,7 +1328,7 @@ function Patient(x, y) {
 			break;
 	}
 
-	this.sprite = new Sprite(patientString, function(x, y) {
+	this.sprite = new Sprite(sprites[this.type], function(x, y) {
 		if(!busy) {
 			that.timerLive.stop();
 			that.timerHeal.start();
@@ -1324,7 +1338,7 @@ function Patient(x, y) {
 		}
 	});
 
-	this.healingSprite = new Sprite("Sprites/Doctor_Treating_Sign.png", function(x, y) {
+	this.healingSprite = new Sprite(doctorTreating, function(x, y) {
 		that.healing = false;
 		that.timerHeal.stop();
 
@@ -1443,6 +1457,17 @@ function Ward() {
 		new Sprite("play_backgrounds/5.jpg", function(x, y) { }),
 		new Sprite("play_backgrounds/6.jpg", function(x, y) { }),
 		new Sprite("play_backgrounds/7.jpg", function(x, y) { })];
+	this.images = [
+		new Image(),
+		new Image(),
+		new Image()];
+	this.doctorTreating = new Image();
+	this.doctorTreating.src = "Sprites/Doctor_Treating_Sign.png";
+
+	this.images[0].src = "Sprites/Victims/Sick_Victim.png";
+	this.images[1].src = "Sprites/Victims/Trauma_Victim.png";
+	this.images[2].src = "Sprites/Victims/Burn_Victim.png";
+
 	this.activeBackground = 0;
 
 	this.enabled = true;
@@ -1534,13 +1559,13 @@ function Ward() {
 
 		switch(n) {
 			case 0:
-				p = new Patient(35, 125);
+				p = new Patient(35, 125, this.images, this.doctorTreating);
 				break;
 			case 1:
-				p = new Patient(245, 125);
+				p = new Patient(245, 125, this.images, this.doctorTreating);
 				break;
 			case 2:
-				p = new Patient(465, 125);
+				p = new Patient(465, 125, this.images, this.doctorTreating);
 				break;
 		}
 
@@ -1583,8 +1608,10 @@ function runGame() {
 	var mmLogo = new Sprite("Logo.png", function(x, y) { });
 	mmLogo.zIndex = 1;
 
-	mmLogo.x = canvasWidth/2 - mmLogo.image.width/2;
-	mmLogo.y = canvasHeight/2 - (mmLogo.image.height/2 + 100);
+	mmLogo.onLoad(function() {
+		mmLogo.x = canvasWidth/2 - mmLogo.image.width/2;
+		mmLogo.y = 70;
+	});
 
 	mainMenu.appendSprite(mmLogo);
 
@@ -1850,8 +1877,6 @@ function runGame() {
 
 	textBox.onUpdate(function() {
 		textBox.center(renderingContext);
-
-		console.log(this);
 	});
 
 	textBox.onEnter(function() {
