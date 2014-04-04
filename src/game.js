@@ -2129,8 +2129,13 @@ function runGame() {
 		var localCoords = pageToLocalCoords(event.clientX, event.clientY);
 		if(paused == true){
 			paused = false;
-			sound.set(true);
-			music.set(true);
+			if(muteButton.enabled == true){
+				sound.set(true);
+				music.set(true);
+			} else {
+				sound.set(false);
+				music.set(false);				
+			}
 		}
 		mainList.onMouseClick(localCoords.x, localCoords.y);
 		mainList.draw(renderingContext);
