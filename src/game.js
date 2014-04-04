@@ -1331,6 +1331,8 @@ function Patient(x, y, sprites, doctorTreating) {
 
 	this.sprite = new Sprite(sprites[this.type], function(x, y) {
 		if(!busy) {
+			EventSound("AmbientSounds/Shower Curtain");
+
 			that.timerLive.stop();
 			that.timerHeal.start();
 
@@ -1340,6 +1342,8 @@ function Patient(x, y, sprites, doctorTreating) {
 	});
 
 	this.healingSprite = new Sprite(doctorTreating, function(x, y) {
+		EventSound("AmbientSounds/Shower Curtain");
+
 		that.healing = false;
 		that.timerHeal.stop();
 
@@ -1350,6 +1354,8 @@ function Patient(x, y, sprites, doctorTreating) {
 	});
 
 	this.timerLive.onTimeout(function() {
+		EventSound("AmbientSounds/Shower Curtain");
+		EventSound("AmbientSounds/Death");
 		that.enabled = false;
 		lives.set(lives.get() - 1);
 
@@ -1359,6 +1365,7 @@ function Patient(x, y, sprites, doctorTreating) {
 	});
 
 	this.timerHeal.onTimeout(function() {
+		EventSound("AmbientSounds/Shower Curtain");
 		that.enabled = false;
 		busy = false;
 
@@ -1560,6 +1567,7 @@ function Ward() {
 	};
 
 	this.createPatient = function(n) {
+		EventSound("AmbientSounds/Shower Curtain");
 		var p;
 
 		switch(n) {
