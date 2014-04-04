@@ -1365,7 +1365,7 @@ function Patient(x, y, sprites, doctorTreating) {
 		that.timerLive.time += that.timerHeal.getDiff();
 		that.timerLive.start();
 
-		that.timerLive.initial = that.timerLive.time;
+		that.timerHeal.initial = that.timerHeal.time;
 		busy = false;
 	});
 
