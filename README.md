@@ -21,7 +21,6 @@ chimed
 ### Code
 - Balance game
 - Optimise for smoothness & speed
-- Get patients in correct difficulty order
 
 ### Possible for the Future
 - Goals/levels to work towards

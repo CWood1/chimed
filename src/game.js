@@ -1289,7 +1289,7 @@ function Patient(x, y) {
 
 	switch(this.type) {
 		case 0:
-			patientString += "Burn_Victim.png";
+			patientString += "Sick_Victim.png";
 
 			this.timerLive = new Timer(Math.ceil(30*ttlMultiplier));
 			this.timerHeal = new Timer(Math.ceil(4*tthMultiplier));
@@ -1305,7 +1305,7 @@ function Patient(x, y) {
 
 			break;
 		case 2:
-			patientString += "Sick_Victim.png";
+			patientString += "Burn_Victim.png";
 
 			this.timerLive = new Timer(Math.ceil(18*ttlMultiplier));
 			this.timerHeal = new Timer(Math.ceil(8*tthMultiplier));
@@ -1601,6 +1601,14 @@ function runGame() {
 
 		mainList.appendSprite(diffMenu);
 	});
+	var mmMenuTutorial = new MenuOption("Tutorial", function() {
+		mainMenu.enabled = false;
+		tutorial.enabled = true;
+
+		mainList.appendSprite(tutorial);
+
+		tutorialAnimation.start();
+	});
 	var mmMenuOptCredits = new MenuOption("Credits", function() {
 		mainMenu.enabled = false;
 		credits.enabled = true;
@@ -1756,14 +1764,6 @@ function runGame() {
 		backgroundMusic.stop();
 		gameplayMusic.play();
 	});
-	var dMenuTutorial = new MenuOption("Tutorial", function() {
-		diffMenu.enabled = false;
-		tutorial.enabled = true;
-
-		mainList.appendSprite(tutorial);
-
-		tutorialAnimation.start();
-	});
 	var dMenuRtn = new MenuOption("Return to menu", function(){ 
 		diffMenu.enabled = false;
 		mainMenu.enabled = true;
@@ -1774,7 +1774,6 @@ function runGame() {
 	dMenu.newOption(dMenuEasy);
 	dMenu.newOption(dMenuMed);
 	dMenu.newOption(dMenuHard);
-	dMenu.newOption(dMenuTutorial);
 	dMenu.newOption(dMenuRtn);
 	
 	dMenu.center(renderingContext);
@@ -1949,17 +1948,21 @@ function runGame() {
 	var tutSlide3 = new Sprite("Tutorial/Tutorial_Three.jpg", function(x, y) {
 
 	});
+	var tutSlide4 = new Sprite("Tutorial/Tutorial_Four.jpg", function(x, y) {
+
+	});
 
 	tutorialAnimation.addSlide(tutSlide1, 0);
 	tutorialAnimation.addSlide(tutSlide2, 0);
 	tutorialAnimation.addSlide(tutSlide3, 0);
+	tutorialAnimation.addSlide(tutSlide4, 0);
 
 	tutorialAnimation.zIndex = 100;
 	tutorialAnimation.onComplete(function() {
 		tutorial.enabled = false;
-		diffMenu.enabled = true;
+		mainMenu.enabled = true;
 
-		mainList.appendSprite(diffMenu);
+		mainList.appendSprite(mainMenu);
 	});
 
 	tutorial.appendSprite(tutorialAnimation);
