@@ -47,6 +47,50 @@ function getCookie(name, defaultValue) {
 	return defaultValue;
 }
 
+function Interval(callback, time, repeating) {
+	if(typeof(repeating) === 'undefined') {
+		repeating = false;
+			// Default to oneshot
+	}
+
+	this.interval = {};
+
+	if(repeating) {
+		this.interval = setInterval(callback, time);
+	} else {
+		this.interval = setTimeout(callback, time);
+	}
+
+	this.remaining = time;
+	this.initTime = time;
+	this.repeating = repeating;
+	this.start = new Date();
+	this.callback = callback;
+	
+	this.pause = function() {
+		if(this.repeating) {
+			clearInterval(this.interval);
+		} else {
+			clearTimeout(this.interval);
+		}
+
+		remaining = new Date() - this.start;
+	};
+
+	this.resume = function() {
+		if(this.repeating) {
+			that = this;
+
+			this.interval = setTimeout(function() {
+				that.callback();
+				that.interval = setInterval(that.callback, that.initTime);
+			}, this.remaining);
+		} else {
+			this.interval = setTimeout(this.callback, this.remaining);
+		}
+	};
+}
+
 var sound = new Reactive(true);
 var music = new Reactive(true);
 var score = new Reactive(0);
@@ -58,7 +102,7 @@ var spawnRate = 0;
 var ttlMultiplier = 1;
 var tthMultiplier = 1;
 var busy = false;
-var paused = false;
+var paused = new Reactive(false);
 
 var canvasWidth = 0;
 var canvasHeight = 0;
@@ -356,7 +400,6 @@ function Timer(startTime, scale) {
 	this.zIndex = 0;
 
 	this.paused = false;
-	this.recentPause = false;
 
 	this.time = startTime;
 	this.initial = startTime;
@@ -374,14 +417,6 @@ function Timer(startTime, scale) {
 
 	this.draw = function(renderingContext) {
 		renderingContext.strokeStyle = "black";
-		
-		if(paused == true){
-			this.stop();
-			this.recentPause = true;
-		} else if(paused == false && this.recentPause == true){
-			this.start();
-			this.recentPause = false;
-		}
 
 		if(this.colour) {
 			renderingContext.fillStyle = this.colour;
@@ -466,7 +501,7 @@ function Timer(startTime, scale) {
 			for(var i = 0; i < this.onTimeoutC; i++) {
 				this.onTimeoutC[i]();
 			}
-		} else if(paused == false) {
+		} else if(!paused.get()) {
 			this.interval = setInterval(function() {
 				that.time--;
 
@@ -1485,7 +1520,24 @@ function Patient(x, y, sprites, doctorTreating) {
 		this.healingSprite.onMouseOut();
 		this.timerHeal.onMouseOut();
 	};
-	
+
+	paused.onChange(function(value) {
+		if(value) {
+			that.healing = that.timerHeal.paused;
+			
+			if(that.healing) {
+				that.timerHeal.stop();
+			} else {
+				that.timerLive.stop();
+			}
+		} else {
+			if(that.healing) {
+				that.timerHeal.start();
+			} else {
+				that.timerLive.start();
+			}
+		}
+	});
 }
 
 function Ward() {
@@ -1515,6 +1567,8 @@ function Ward() {
 	this.zIndex = 0;
 
 	this.patients = [false, false, false];
+
+	this.intervals = [false, false, false];
 
 	this.draw = function(renderingContext) {
 		this.activeBackground = 0;
@@ -1592,7 +1646,7 @@ function Ward() {
 	this.schedulePatient = function(n) {
 		x = Math.floor(spawnRate * 1000) - Math.floor(score.get() / 25);
 
-		setTimeout(function() {
+		this.intervals[n] = new Interval(function() {
 			that.createPatient(n);
 		}, (x <= 0) ? 1 : x);
 	};
@@ -1600,6 +1654,8 @@ function Ward() {
 	this.createPatient = function(n) {
 		EventSound("AmbientSounds/Shower Curtain");
 		var p;
+		
+		this.intervals[n] = false;
 
 		switch(n) {
 			case 0:
@@ -1615,6 +1671,22 @@ function Ward() {
 
 		this.patients[n] = p;
 	};
+
+	paused.onChange(function(value) {
+		if(value) {
+			for(var i = 0; i < that.intervals.length; i++) {
+				if(that.intervals[i]) {
+					that.intervals[i].pause();
+				}
+			}
+		} else {
+			for(var i = 0; i < that.intervals.length; i++) {
+				if(that.intervals[i]) {
+					that.intervals[i].resume();
+				}
+			}
+		}
+	});				
 }
 
 function runGame() {
@@ -1791,6 +1863,7 @@ function runGame() {
 	
 	pauseOverlay = new Sprite("Sprites/pauseOverlay.png",function(x,y){
 		pauseOverlay.enabled = false;
+		paused.set(false);
 		
 	});
 	pauseOverlay.onLoad(function(){
@@ -1800,7 +1873,7 @@ function runGame() {
 	
 	pauseOverlay.zIndex = 101;
 	
-	if(paused == true){
+	if(paused.get()){
 		mainList.appendSprite(pauseOverlay);
 	}
 
@@ -1916,15 +1989,30 @@ function runGame() {
 	});
 
 	pauseButton = new Sprite("Buttons/Pause.png", function(x, y) {
-		pauseButton.enabled = true;
-		paused = true;
-		pauseOverlay.enabled = true;
-		mainList.appendSprite(pauseOverlay);
-		
-		sound.set(false);
-		music.set(false);
+		console.log(paused.get());
+		if(paused.get() === false) {
+			paused.set(true);
+		}
+	});
 
-		mainList.appendSprite(pauseButton);
+	paused.onChange(function(value) {
+		if(value) {
+			pauseOverlay.enabled = true;
+			mainList.appendSprite(pauseOverlay);
+		
+			sound.set(false);
+			music.set(false);
+		} else {
+			pauseOverlay.enabled = false;
+
+			if(muteButton.enabled == true){
+				sound.set(true);
+				music.set(true);
+			} else {
+				sound.set(false);
+				music.set(false);				
+			}
+		}
 	});
 	
 	pauseButton.onLoad(function() {
@@ -2127,16 +2215,7 @@ function runGame() {
 
 	canvas.addEventListener('click', function(event) {
 		var localCoords = pageToLocalCoords(event.clientX, event.clientY);
-		if(paused == true){
-			paused = false;
-			if(muteButton.enabled == true){
-				sound.set(true);
-				music.set(true);
-			} else {
-				sound.set(false);
-				music.set(false);				
-			}
-		}
+
 		mainList.onMouseClick(localCoords.x, localCoords.y);
 		mainList.draw(renderingContext);
 	});
