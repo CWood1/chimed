@@ -1859,7 +1859,7 @@ function runGame() {
 	var cBox = new MessageBox(0, 0, "Credits",
 		"Programmers\nConnor Wood\nCameron Kyle-Davidson\n\n" +
 		"Artwork\nLydia Pauly\n\nGame Design\nBen Williams\n\n" +
-		"Music\nKevin MacLeod - incompetech.com");
+		"Music\nKevin MacLeod - incompetech.com\n\nA special thanks to\nAkise - Lead Tester");
 
 	var cBoxBack = new MenuOption("Back", function() {
 		credits.enabled = false;
