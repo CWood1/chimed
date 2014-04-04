@@ -1580,6 +1580,14 @@ function runGame() {
 // Main menu //////////////////////////////////////////////////////////////////
 	mainMenu.enabled = true;
 
+	var mmLogo = new Sprite("Logo.png", function(x, y) { });
+	mmLogo.zIndex = 1;
+
+	mmLogo.x = canvasWidth/2 - mmLogo.image.width/2;
+	mmLogo.y = canvasHeight/2 - (mmLogo.image.height/2 + 100);
+
+	mainMenu.appendSprite(mmLogo);
+
 	var mmBackground = new Sprite("background.jpg", function(x, y) { });
 	mmBackground.zIndex = -1;
 	mainMenu.appendSprite(mmBackground);

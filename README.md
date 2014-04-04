@@ -9,7 +9,6 @@ chimed
 ### Artwork
 - Artwork changes (plants on menu screen)
 - Grammatical checks
-- Title on main screen
 
 ### Sound
 - Sound effects
