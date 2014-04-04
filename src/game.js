@@ -1898,27 +1898,24 @@ function runGame() {
 // Game Over //////////////////////////////////////////////////////////////////
 	gameOver.enabled = false;
 
-	// TODO: This will need writing properly, once the animation images come through
-	var goBackground = new Sprite("background.jpg", function(x, y) { });
-	goBackground.zIndex = -1;
-	gameOver.appendSprite(goBackground);
+	var gameOverAnim = new Animation(true, false);
+	
+	var goSlide1 = new Sprite("EndingSlides/Ending_Slide_One.jpg", function(x, y) { });
+	var goSlide2 = new Sprite("EndingSlides/Ending_Slide_Two.jpg", function(x, y) { });
+	var goSlide3 = new Sprite("EndingSlides/Ending_Slide_Three.jpg", function(x, y) { });
 
-	var gameOverBox = new MessageBox(0, 0, "Game Over", "Oh dear, you are dead.");
-	gameOverBox.closable = false;
-	gameOverBox.open = true;
+	gameOverAnim.addSlide(goSlide1, 0);
+	gameOverAnim.addSlide(goSlide2, 0);
+	gameOverAnim.addSlide(goSlide3, 0);
 
-	var gameOverButton = new MenuOption("Back to Main Menu", function() {
+	gameOverAnim.onComplete(function() {
 		gameOver.enabled = false;
-		console.log(score.get());
-		console.log(currentHighScore.get());
 
 		if(score.get() > currentHighScore.get()) {
 			enterName.enabled = true;
-
 			mainList.appendSprite(enterName);
 		} else {
 			mainMenu.enabled = true;
-
 			mainList.appendSprite(mainMenu);
 		}
 
@@ -1928,10 +1925,7 @@ function runGame() {
 		mainList.draw(renderingContext);
 	});
 
-	gameOverBox.newOption(gameOverButton);
-	
-	gameOverBox.center(renderingContext);
-	gameOver.appendSprite(gameOverBox);
+	gameOver.appendSprite(gameOverAnim);
 
 // Tutorial ///////////////////////////////////////////////////////////////////
 	tutorial.enabled = false;
@@ -1972,6 +1966,8 @@ function runGame() {
 
 			gameplayMusic.stop();
 			gameoverMusic.play();
+
+			gameOverAnim.start();
 		}
 	});
 	
