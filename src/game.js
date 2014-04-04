@@ -58,6 +58,7 @@ var spawnRate = 0;
 var ttlMultiplier = 1;
 var tthMultiplier = 1;
 var busy = false;
+var paused = false;
 
 var canvasWidth = 0;
 var canvasHeight = 0;
@@ -355,6 +356,7 @@ function Timer(startTime, scale) {
 	this.zIndex = 0;
 
 	this.paused = false;
+	this.recentPause = false;
 
 	this.time = startTime;
 	this.initial = startTime;
@@ -372,6 +374,14 @@ function Timer(startTime, scale) {
 
 	this.draw = function(renderingContext) {
 		renderingContext.strokeStyle = "black";
+		
+		if(paused == true){
+			this.stop();
+			this.recentPause = true;
+		} else if(paused == false && this.recentPause == true){
+			this.start();
+			this.recentPause = false;
+		}
 
 		if(this.colour) {
 			renderingContext.fillStyle = this.colour;
@@ -456,7 +466,7 @@ function Timer(startTime, scale) {
 			for(var i = 0; i < this.onTimeoutC; i++) {
 				this.onTimeoutC[i]();
 			}
-		} else {
+		} else if(paused == false) {
 			this.interval = setInterval(function() {
 				that.time--;
 
@@ -1475,6 +1485,7 @@ function Patient(x, y, sprites, doctorTreating) {
 		this.healingSprite.onMouseOut();
 		this.timerHeal.onMouseOut();
 	};
+	
 }
 
 function Ward() {
@@ -1729,15 +1740,17 @@ function runGame() {
 		mainList.appendSprite(gamePlay);
 
 		setInterval(function() {
-			var playAmbulance = Math.round(Math.random()*10000);
-			var playCough = Math.round(Math.random()*10000);
+			if(gameOver.enabled == false){
+				var playAmbulance = Math.round(Math.random()*10000);
+				var playCough = Math.round(Math.random()*10000);
 
-			if(playAmbulance < 10) {
-				EventSound("AmbientSounds/Ambulance");
-			}
+				if(playAmbulance < 10) {
+					EventSound("AmbientSounds/Ambulance");
+				}
 
-			if(playCough < 10) {
-				EventSound("AmbientSounds/Cough");
+				if(playCough < 10) {
+					EventSound("AmbientSounds/Cough");
+				}
 			}
 		}, 50);
 	});
@@ -1775,6 +1788,21 @@ function runGame() {
 
 	var ward = new Ward();
 	gamePlay.appendSprite(ward);
+	
+	pauseOverlay = new Sprite("Sprites/pauseOverlay.png",function(x,y){
+		pauseOverlay.enabled = false;
+		
+	});
+	pauseOverlay.onLoad(function(){
+		pauseOverlay.x = 0;
+		pauseOverlay.y = 0;
+	});
+	
+	pauseOverlay.zIndex = 100;
+	
+	if(paused == true){
+		mainList.appendSprite(pauseOverlay);
+	}
 
 // Difficulty menu ////////////////////////////////////////////////////////////
 	diffMenu.enabled = false;
@@ -1858,7 +1886,7 @@ function runGame() {
 	muteButton = new Sprite("Buttons/Mute.png", function(x, y) {
 		muteButton.enabled = false;
 		unmuteButton.enabled = true;
-
+		
 		sound.set(false);
 		music.set(false);
 
@@ -1887,8 +1915,29 @@ function runGame() {
 		unmuteButton.y = canvasHeight - unmuteButton.image.height;
 	});
 
+	pauseButton = new Sprite("Buttons/Pause.png", function(x, y) {
+		pauseButton.enabled = true;
+		paused = true;
+		pauseOverlay.enabled = true;
+		mainList.appendSprite(pauseOverlay);
+		
+		sound.set(false);
+		music.set(false);
+
+		mainList.appendSprite(pauseButton);
+	});
+	
+	pauseButton.onLoad(function() {
+		pauseButton.x = 0 + pauseButton.image.width;
+		pauseButton.y = canvasHeight - pauseButton.image.height;
+	});
+	
+	pauseButton.zIndex = 100;
+	
 	muteButton.enabled = true;
+	pauseButton.enabled = true;
 	mainList.appendSprite(muteButton);
+	mainList.appendSprite(pauseButton);
 
 // Credits ////////////////////////////////////////////////////////////////////
 	credits.enabled = false;
@@ -2078,6 +2127,11 @@ function runGame() {
 
 	canvas.addEventListener('click', function(event) {
 		var localCoords = pageToLocalCoords(event.clientX, event.clientY);
+		if(paused == true){
+			paused = false;
+			sound.set(true);
+			music.set(true);
+		}
 		mainList.onMouseClick(localCoords.x, localCoords.y);
 		mainList.draw(renderingContext);
 	});
