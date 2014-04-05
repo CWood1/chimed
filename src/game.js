@@ -1026,15 +1026,19 @@ function TextBox(x, y, titleText, scale) {
 		this.onEnterC.push(callback);
 	}
 
-	this.update = function(strChar, hardCode){
-		this.message = this.message.concat(strChar);
+	this.update = function(strChar, hardCode) {
+		if(this.message.length < 20) {
+			this.message = this.message.concat(strChar);
 
-		if(hardCode == 8){
-			this.message = this.message.substring(0,this.message.length - 2);
-		}
+			if(hardCode == 8){
+				this.message = this.message.substring(0,this.message.length - 2);
+			}
 
-		for(var i = 0; i < this.onUpdateC.length; i++) {
-			this.onUpdateC[i]();
+			for(var i = 0; i < this.onUpdateC.length; i++) {
+				this.onUpdateC[i]();
+			}
+		} else if(hardCode == 8) {
+			this.message = this.message.substring(0, this.message.length - 1);
 		}
 
 		if(hardCode == 13){
@@ -1245,6 +1249,14 @@ function TextBox(x, y, titleText, scale) {
 
 	var that=this;
 	document.addEventListener("keydown", keyHandler);
+	document.addEventListener("keydown", function(event) {
+		if((event.altKey) || (event.keyCode == 8) ||
+			((event.ctrlKey) && ((event.keyCode == 78) || (event.keyCode == 82))) ||
+			(event.keyCode == 116)) {
+			event.keyCode = 0;
+			event.returnValue = false;
+		}
+	});
 	
 	function keyHandler(event) {
 		that.update(String.fromCharCode(event.keyCode), event.keyCode);
@@ -2067,7 +2079,8 @@ function runGame() {
 	var cBox = new MessageBox(0, 0, "Credits",
 		"Programmers\nConnor Wood\nCameron Kyle-Davidson\n\n" +
 		"Artwork\nLydia Pauly\n\nGame Design\nBen Williams\n\n" +
-		"Music\nKevin MacLeod - incompetech.com\n\nA special thanks to\nAkise - Lead Tester");
+		"Music\nKevin MacLeod - incompetech.com\n\nSounds\nfreesound.org" +
+		"\nsangtao\nludist\nHarris85\nsaphe\n\nA special thanks to\nAkise - Lead Tester");
 
 	var cBoxBack = new MenuOption("Back", function() {
 		credits.enabled = false;
