@@ -1829,7 +1829,7 @@ function runGame() {
 		mainList.appendSprite(gamePlay);
 
 		setInterval(function() {
-			if(gameOver.enabled == false){
+			if(gamePlay.enabled){
 				var playAmbulance = Math.round(Math.random()*10000);
 				var playCough = Math.round(Math.random()*10000);
 
