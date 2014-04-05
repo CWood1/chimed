@@ -1698,7 +1698,9 @@ function Ward() {
 	lives.onChange(function(value) {
 		if(value === 0) {
 			for(var i = 0; i < that.intervals.length; i++) {
-				that.intervals[i].pause();
+				if(that.intervals[i]) {
+					that.intervals[i].pause();
+				}
 			}
 		}
 	});
@@ -2207,12 +2209,11 @@ function runGame() {
 			gameoverMusic.play();
 
 			gameOverAnim.start();
-		}
-	});
-
-	lives.onChange(function(value) {
-		if(value == 0) {
+			
+			var s = sound.get();
 			sound.set(false);
+			sound.set(s);
+				// Cancel all sounds that are already playing
 		}
 	});
 	
