@@ -1540,8 +1540,10 @@ function Patient(x, y, sprites, doctorTreating) {
 	});
 
 	lives.onChange(function(value) {
-		that.timerHeal.stop();
-		that.timerLive.stop();
+		if(value === 0) {
+			that.timerHeal.stop();
+			that.timerLive.stop();
+		}
 	});
 }
 
