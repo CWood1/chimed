@@ -104,6 +104,9 @@ var tthMultiplier = 1;
 var busy = false;
 var paused = new Reactive(false);
 
+var ambulance = false;
+var cough = false;
+
 var canvasWidth = 0;
 var canvasHeight = 0;
 
@@ -186,10 +189,16 @@ function Music(file) {
 	}
 }
 
-function EventSound(file) {
+function EventSound(file, onComplete) {
+	if(typeof(onComplete) === 'undefined') {
+		onComplete = function() { };
+	}
+
 	if(sound.get()) {
 		var audio = new Sound(file);	
 		audio.play();
+
+		audio.addEventListener('ended', onComplete);
 
 		sound.onChange(function(value) {
 			if(value === false) {
@@ -1523,8 +1532,6 @@ function Patient(x, y, sprites, doctorTreating) {
 
 	paused.onChange(function(value) {
 		if(value) {
-			that.healing = that.timerHeal.paused;
-			
 			if(that.healing) {
 				that.timerHeal.stop();
 			} else {
@@ -1833,12 +1840,18 @@ function runGame() {
 				var playAmbulance = Math.round(Math.random()*10000);
 				var playCough = Math.round(Math.random()*10000);
 
-				if(playAmbulance < 10) {
-					EventSound("AmbientSounds/Ambulance");
+				if(playAmbulance < 10 && !ambulance) {
+					ambulance = true;
+					EventSound("AmbientSounds/Ambulance", function() {
+						ambulance = false;
+					});
 				}
 
-				if(playCough < 10) {
-					EventSound("AmbientSounds/Cough");
+				if(playCough < 10 && !cough) {
+					cough = true;
+					EventSound("AmbientSounds/Cough", function() {
+						cough = false;
+					});
 				}
 			}
 		}, 50);
@@ -1910,7 +1923,7 @@ function runGame() {
 		spawnRate = 5;
 		lives.set(10);
 		ttlMultiplier = 1;
-		tthMultiplier = 1;
+		tthMultiplier = 0.4;
 			// These will need balancing
 
 		diffMenu.enabled = false;
@@ -1927,7 +1940,7 @@ function runGame() {
 		spawnRate = 3;
 		lives.set(7);
 		ttlMultiplier = 0.8;
-		tthMultiplier = 0.8;
+		tthMultiplier = 0.6;
 			// These will need balancing
 
 		diffMenu.enabled = false;
@@ -1944,7 +1957,7 @@ function runGame() {
 		spawnRate = 1;
 		lives.set(5);
 		ttlMultiplier = 0.5;
-		tthMultiplier = 0.5;
+		tthMultiplier = 0.7;
 			// These will need balancing
 
 		diffMenu.enabled = false;
@@ -2018,16 +2031,16 @@ function runGame() {
 			mainList.appendSprite(pauseOverlay);
 		
 			sound.set(false);
-			music.set(false);
+			//music.set(false);
 		} else {
 			pauseOverlay.enabled = false;
 
 			if(muteButton.enabled == true){
 				sound.set(true);
-				music.set(true);
+			//	music.set(true);
 			} else {
 				sound.set(false);
-				music.set(false);				
+			//	music.set(false);				
 			}
 		}
 	});
