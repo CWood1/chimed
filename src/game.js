@@ -1538,6 +1538,11 @@ function Patient(x, y, sprites, doctorTreating) {
 			}
 		}
 	});
+
+	lives.onChange(function(value) {
+		that.timerHeal.stop();
+		that.timerLive.stop();
+	});
 }
 
 function Ward() {
@@ -1686,7 +1691,15 @@ function Ward() {
 				}
 			}
 		}
-	});				
+	});
+
+	lives.onChange(function(value) {
+		if(value === 0) {
+			for(var i = 0; i < that.intervals.length; i++) {
+				that.intervals[i].pause();
+			}
+		}
+	});
 }
 
 function runGame() {
